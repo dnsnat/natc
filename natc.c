@@ -317,27 +317,66 @@ int tap_auth_keeplive_process(struct tap_login_thread_t *thread_t)
     return 0;
 }
 
+int socket_connect(struct args *args, struct sockaddr_in *remote)
+{
+    // TODO: make the port and bind address configurable
+    int sockfd = setup_socket(inet_addr("0.0.0.0"), 32000);
+    if (sockfd < 0) {
+        fprintf(stderr, "unable to create socket\n");
+        return sockfd;
+    }
+
+    /*认证和心跳*/
+    struct tap_login_request_t request = {{0xFF,0xFF,0xFF,0xFF,0xFF,0xFF}, {0,0,0,0,0,0}, {0xF0, 0xF0}, 1, LOGIN_REQUEST, "admin", "admin"};
+    sprintf(request.username, args->username);
+    sprintf(request.password, args->password);
+
+    struct tap_login_thread_t *thread_t = malloc(sizeof(struct tap_login_thread_t));
+
+    thread_t->sockfd = sockfd;
+    memcpy(&thread_t->remote_real, remote, sizeof(struct sockaddr_in));
+    memcpy(&thread_t->request_real, &request, sizeof(struct tap_login_request_t));
+    while(tap_auth_login(thread_t))
+    {
+        printf("login auth fail \r\n");
+        if(!args->repeat)
+            exit(0);
+        sleep(3);
+    }
+
+    tap_auth_keeplive_process(thread_t);
+    return sockfd;
+}
+
 int run_tunnel(struct args *args, sigset_t *orig_mask) 
 {
+    struct sockaddr_in remote;
+    memset(&remote, 0, sizeof remote);
+
+    remote.sin_family = AF_INET;
+    remote.sin_port = htons(32000);
+    remote.sin_addr.s_addr = inet_addr(args->remote);
+
+    if (remote.sin_addr.s_addr == INADDR_NONE) {
+        fprintf(stderr, "failed to parse remote: %s\n", args->remote);
+        return 2;
+    }
+    fprintf(stderr, "running in client mode with remote: %s\n", args->remote);
+
+    /*连接服务器*/
+    int sockfd = socket_connect(args, &remote);
+    if(sockfd < 0)
+    {
+        printf("connect server error\n");
+        return sockfd;
+    }
+
+    /*创建虚拟接口*/
     int fd = create_tap(args->iface, device, args->mtu);
     if (fd < 0) {
         fprintf(stderr, "unable to create tap device\n");
         return 1;
     }
-
-    // TODO: make the port and bind address configurable
-    int sockfd = setup_socket(inet_addr("0.0.0.0"), 32000);
-    if (sockfd < 0) {
-        fprintf(stderr, "unable to create socket\n");
-        return 1;
-    }
-
-#if 0
-    if (drop_privileges(args->uid, args->gid) != 0) {
-        fprintf(stderr, "couldn't drop privileges\n");
-        return 1;
-    }
-#endif
 
     // circular queues
     struct frame recv_queue[RECV_QUEUE] = {0};
@@ -357,45 +396,6 @@ int run_tunnel(struct args *args, sigset_t *orig_mask)
     fds[0].fd = fd;
     fds[1].fd = sockfd;
 
-    struct sockaddr_in remote;
-    memset(&remote, 0, sizeof remote);
-    char has_remote = 0;
-    fprintf(stderr, "tunnel is up\n");
-
-    if (args->remote) 
-    {
-        remote.sin_family = AF_INET;
-        remote.sin_port = htons(32000);
-        has_remote = 1;
-
-        remote.sin_addr.s_addr = inet_addr(args->remote);
-        if (remote.sin_addr.s_addr == INADDR_NONE) {
-            fprintf(stderr, "failed to parse remote: %s\n", args->remote);
-            return 2;
-        }
-        fprintf(stderr, "running in client mode with remote: %s\n", args->remote);
-
-        /*认证和心跳*/
-        struct tap_login_request_t request = {{0xFF,0xFF,0xFF,0xFF,0xFF,0xFF}, {0,0,0,0,0,0}, {0xF0, 0xF0}, 1, LOGIN_REQUEST, "admin", "admin"};
-        sprintf(request.username, args->username);
-        sprintf(request.password, args->password);
-
-        struct tap_login_thread_t *thread_t = malloc(sizeof(struct tap_login_thread_t));
-        thread_t->sockfd = sockfd;
-        memcpy(&thread_t->remote_real, &remote, sizeof(struct sockaddr_in));
-        memcpy(&thread_t->request_real, &request, sizeof(struct tap_login_request_t));
-        while(tap_auth_login(thread_t))
-        {
-            printf("login auth fail \r\n");
-            if(!args->repeat)
-                exit(0);
-            sleep(3);
-        }
-
-        tap_auth_keeplive_process(thread_t);
-        //free(thread_t);
-    }
-
     if (args->up_script) 
     {
         int ret = run_updown(args->up_script, device);
@@ -413,7 +413,7 @@ int run_tunnel(struct args *args, sigset_t *orig_mask)
         }
 
         fds[1].events = POLLIN;
-        if (send_len > 0 && has_remote) {
+        if (send_len > 0) {
             fds[1].events |= POLLOUT;
         }
 
@@ -513,7 +513,6 @@ int run_tunnel(struct args *args, sigset_t *orig_mask)
 
             // TODO: handle case where remote changes, in both server+client mode
             socklen_t l = sizeof(remote);
-            has_remote = 1;
             ssize_t n = recvfrom(
                     sockfd,
                     &f->data,

@@ -194,14 +194,7 @@ int create_tap(char *name, char return_name[IFNAMSIZ], unsigned int mtu)
         return err;
     }
 
-#if 0
-    char if_up[128];
-    sprintf(if_up, "ifconfig %s up", return_name);
-    if (system(if_up) == -1) {
-        printf("interface up error\n");
-    }
-#endif
-
+    /*保证重启应用mac地址不变*/
     get_if_mac(return_name);
     if(!get_file_mac())
         set_if_mac(return_name);
