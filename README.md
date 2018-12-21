@@ -16,8 +16,8 @@
 
 依赖: 编译方法查看build.sh文件
 
-	1. jansson
-	2. onion
+	1. jansson https://github.com/akheron/jansson.git
+	2. onion https://github.com/davidmoreno/onion.git
 
 编译方法:
 

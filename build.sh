@@ -36,11 +36,11 @@ fi
 #cd onion
 #mkdir build && cd build
 #cmake .. -DONION_USE_SYSTEMD=false -DONION_USE_SSL=false -DONION_USE_SQLITE3=false -DONION_USE_REDIS=false -DONION_USE_PAM=false -DONION_USE_XML2=false -DONION_USE_PNG=false -DONION_USE_JPEG=false -DONION_EXAMPLES=false -DONION_USE_TESTS=false  -DCMAKE_INSTALL_PREFIX=/opt/toolchain/openwrt_sdk/openwrt-sdk-18.06.0-kirkwood_gcc-7.3.0_musl_eabi.Linux-x86_64/staging_dir/toolchain-arm_xscale_gcc-7.3.0_musl_eabi/usr
-#sudo make && make install
+#make && make install
 
 #jansson 库安装
 #cd jansson
 #mkdir build && cd build
 #cmake .. -DCMAKE_INSTALL_PREFIX=/opt/toolchain/openwrt_sdk/openwrt-sdk-18.06.0-kirkwood_gcc-7.3.0_musl_eabi.Linux-x86_64/staging_dir/toolchain-arm_xscale_gcc-7.3.0_musl_eabi/usr
-#sudo make && make install
+#make && make install
 

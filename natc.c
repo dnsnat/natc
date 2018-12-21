@@ -266,7 +266,7 @@ int connect_server(struct args *args, struct sockaddr_in *remote)
         return sockfd;
     }
 
-    /*认证和心跳*/
+    /*发起认证*/
     struct tap_login_request_t request = {{0xFF,0xFF,0xFF,0xFF,0xFF,0xFF}, {0,0,0,0,0,0}, {0xF0, 0xF0}, 1, LOGIN_REQUEST, "admin", "admin"};
     sprintf(request.username, args->username);
     sprintf(request.password, args->password);
