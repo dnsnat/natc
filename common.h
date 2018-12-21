@@ -15,11 +15,8 @@
  *
  * =====================================================================================
  */
-#ifndef _LIB_H
-#define _LIB_H
-
-int insert_addr(struct sockaddr_in *remote, char *data);
-int obtain_addr(struct sockaddr_in *remote, char *data);
+#ifndef _COMMON_H
+#define _COMMON_H
 
 typedef enum 
 {
@@ -46,12 +43,6 @@ struct tap_login_respond_t{
     char type[2];
     int version;
     ELOGIN status;
-};
-
-struct tap_login_thread_t{
-    int sockfd;
-    struct sockaddr_in  remote_real;
-    struct tap_login_request_t request_real;
 };
 
 #endif

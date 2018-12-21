@@ -27,7 +27,6 @@
 
 #include "natc.h"
 #include "iface.h"
-#include "lib.h"
 #include "./dhcp/dhclient.h"
 
 #define RECV_QUEUE 1024
@@ -65,6 +64,13 @@ int setup_socket(in_addr_t bind_addr, uint16_t bind_port)
     struct timeval timeout= {10, 0}; //10S 超时
     setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, (char*)&timeout, sizeof(timeout));
 
+    int i = 1;
+    if(setsockopt(sockfd, SOL_SOCKET, SO_REUSEADDR, &i, sizeof(i))) {
+        perror("(create_server) setsockopt(): Error setting sockopt.");
+        close(sockfd);
+        return -1;
+    }
+
     return sockfd;
 }
 
@@ -97,106 +103,6 @@ int drop_privileges(int uid, int gid)
         perror("uetgid");
         return 1;
     }
-    return 0;
-}
-
-#if 0
-/*考虑废弃 因为心跳包不需要回应*/
-int tap_auth_send_timer(struct tap_login_thread_t *thread_t)
-{
-    struct sockaddr *remote = (struct sockaddr *)&thread_t->remote_real;
-    struct tap_login_request_t *request = (struct tap_login_request_t *)&thread_t->request_real;
-
-    memcpy(request->l_mac, macaddr, sizeof(request->l_mac));
-
-    ssize_t n = sendto  (thread_t->sockfd, request, sizeof(struct tap_login_request_t), 0, (struct sockaddr *)remote, sizeof(struct sockaddr));
-    if (n < 0) {
-        perror("sendto username and password");
-        return -1;
-    } else if (n < sizeof(struct tap_login_request_t)) {
-        printf("[login send error] only sent %zd bytes to peer (out of %zd bytes)\n", n, sizeof(struct tap_login_request_t));
-        return -1;
-    }
-
-    time_t now; //实例化time_t结构    
-    struct tm *timenow; //实例化tm结构指针    
-    time(&now);   
-    timenow = localtime(&now);   
-    printf("%s:send keepalive request\r\n", asctime(timenow));
-    return 0;
-}
-
-int tap_auth_recv_timer()
-{
-    time_t now;         //实例化time_t结构    
-    struct tm *recv_time; //实例化tm结构指针    
-    time(&now);   
-    recv_time = localtime(&now);   
-    printf("%s:recv keepalive request\r\n", asctime(recv_time));
-    recv_min = recv_time->tm_min;
-    return 0;
-}
-#endif
-
-int tap_auth_login(struct tap_login_thread_t *thread_t)
-{
-    struct sockaddr *remote = (struct sockaddr *)&thread_t->remote_real;
-    struct tap_login_request_t *request = (struct tap_login_request_t *)&thread_t->request_real;
-
-    struct tap_login_respond_t respond;
-    memcpy(request->l_mac, macaddr, sizeof(request->l_mac));
-
-    printf("send auth\r\n");
-    ssize_t n = sendto  (thread_t->sockfd, request, sizeof(struct tap_login_request_t), 0, (struct sockaddr *)remote, sizeof(struct sockaddr));
-    if (n < 0) {
-        perror("sendto username and password");
-        return -1;
-    } else if (n < sizeof(struct tap_login_request_t)) {
-        printf("[login send error] only sent %zd bytes to peer (out of %zd bytes)\n", n, sizeof(struct tap_login_request_t));
-        return -1;
-    }
-
-    socklen_t l = sizeof(struct sockaddr);
-    n = recvfrom(thread_t->sockfd, &respond, sizeof(respond), 0, remote, &l);
-    if(n != sizeof(struct tap_login_respond_t))
-    {
-        printf("get login status error n = %ld\n", (long)n);
-        return -1;
-    }
-    memcpy(request->r_mac, respond.l_mac, sizeof(request->r_mac));
-    memcpy(&thread_t->remote_real, remote, sizeof(thread_t->remote_real));
-
-    if(respond.status == LOGIN_SUCCESS)
-    {
-        printf("auth success!\n");
-        return 0;
-    }
-    else
-    {
-        printf("auth false !!!\n");
-        return -1;
-    }
-}
-
-int tap_keepalive(struct tap_login_thread_t *thread_t)
-{
-    struct sockaddr *remote = (struct sockaddr *)&thread_t->remote_real;
-    struct tap_login_request_t *request = (struct tap_login_request_t *)&thread_t->request_real;
-
-    memcpy(request->l_mac, macaddr, sizeof(request->l_mac));
-    memcpy(request->tun_ip, if_ip, sizeof(request->tun_ip));
-    request->status = KEEPLIVE_TIME;
-
-    printf("send keepalive\r\n");
-    ssize_t n = sendto  (thread_t->sockfd, request, sizeof(struct tap_login_request_t), 0, (struct sockaddr *)remote, sizeof(struct sockaddr));
-    if (n < 0) {
-        perror("send keepalive");
-        return -1;
-    } else if (n < sizeof(struct tap_login_request_t)) {
-        printf("[keepalive send error] only sent %zd bytes to peer (out of %zd bytes)\n", n, sizeof(struct tap_login_request_t));
-        return -1;
-    }
-
     return 0;
 }
 
@@ -240,10 +146,24 @@ int NetPing(char *server_ip)
     return -1;
 }
 
+int tap_cmd_send(struct tap_cmd_t *thread_t)
+{
+    ssize_t n = sendto(thread_t->sockfd, thread_t->request_real, sizeof(struct tap_login_request_t), 0, 
+            (struct sockaddr *)thread_t->remote_real, sizeof(struct sockaddr));
+    if (n < 0) {
+        perror("send cmd\n");
+        return -1;
+    } else if (n < sizeof(struct tap_login_request_t)) {
+        printf("[cmd send error] only sent %zd bytes to peer (out of %zd bytes)\n", n, sizeof(struct tap_login_request_t));
+        return -1;
+    }
+
+    return 0;
+}
+
 void *tap_auth_keeplive_timer(void *data)
 {
-    struct tap_login_thread_t *thread_t = data;
-
+    struct tap_cmd_t *thread_t = (struct tap_cmd_t *)data;
     /*此处必须获取到ip?*/
     int getip = 0;
     while(!getip)
@@ -270,12 +190,21 @@ void *tap_auth_keeplive_timer(void *data)
         exit(0);
     }
 
+    /*认证和心跳*/
+    struct tap_login_request_t request = {{0xFF,0xFF,0xFF,0xFF,0xFF,0xFF}, {0,0,0,0,0,0}, {0xF0, 0xF0}, 1, LOGIN_REQUEST, "admin", "admin"};
+    //sprintf(request.username, args->username);
+    //sprintf(request.password, args->password);
+    memcpy(request.l_mac, macaddr, sizeof(request.l_mac));
+    memcpy(request.tun_ip, if_ip, sizeof(request.tun_ip));
+    request.status = KEEPLIVE_TIME;
+    thread_t->request_real = &request;
     /*nat超时-经过测试本地nat没到3分钟就超时了 arp 默认30秒*/
     while(1)
     {
 
         /*二层认证并保持连接 每隔60S发送一次 三分钟没收到则认为超时*/
-        tap_keepalive(thread_t);
+
+        tap_cmd_send(thread_t);
 #if 0
         struct tm *now_time; //实例化tm结构指针    
         time_t now;         //实例化time_t结构    
@@ -305,21 +234,60 @@ void *tap_auth_keeplive_timer(void *data)
     return 0;
 }
 
-int tap_auth_keeplive_process(struct tap_login_thread_t *thread_t)
+/*登录认证*/
+int tap_login_req(struct tap_cmd_t *thread_t)
 {
-    pthread_t tid;
-    printf("[%d]%s\r\n", __LINE__, __func__);
-    if(pthread_create(&tid,NULL,(void *)tap_auth_keeplive_timer, thread_t))
-    {
-        printf("create pthread error!\n");
-        return -1; 
+    struct tap_login_respond_t respond;
+    memcpy(thread_t->request_real->l_mac, macaddr, sizeof(thread_t->request_real->l_mac));
+    tap_cmd_send(thread_t);
+
+    printf("send auth\r\n");
+    ssize_t n = sendto  (thread_t->sockfd, thread_t->request_real, sizeof(struct tap_login_request_t), 0, 
+            (struct sockaddr *)thread_t->remote_real, sizeof(struct sockaddr));
+    if (n < 0) {
+        perror("sendto username and password");
+        return -1;
+    } else if (n < sizeof(struct tap_login_request_t)) {
+        printf("[login send error] only sent %zd bytes to peer (out of %zd bytes)\n", n, sizeof(struct tap_login_request_t));
+        return -1;
     }
-    return 0;
+
+    socklen_t l = sizeof(struct sockaddr);
+    n = recvfrom(thread_t->sockfd, &respond, sizeof(respond), 0, 
+            (struct sockaddr *)thread_t->remote_real, &l);
+    if(n != sizeof(struct tap_login_respond_t))
+    {
+        printf("get login status error n = %ld\n", (long)n);
+        return -1;
+    }
+
+    if(respond.status == LOGIN_SUCCESS)
+    {
+        printf("auth success!\n");
+        return 0;
+    }
+    else
+    {
+        printf("auth false !!!\n");
+        return -1;
+    }
 }
 
-int socket_connect(struct args *args, struct sockaddr_in *remote)
+/*创建服务器连接*/
+int connect_server(struct args *args, struct sockaddr_in *remote)
 {
-    // TODO: make the port and bind address configurable
+    /*绑定远程端口*/
+    memset(remote, 0, sizeof(struct sockaddr_in));
+    remote->sin_family = AF_INET;
+    remote->sin_port = htons(32000);
+    remote->sin_addr.s_addr = inet_addr(args->remote);
+    if (remote->sin_addr.s_addr == INADDR_NONE) {
+        fprintf(stderr, "failed to parse remote: %s\n", args->remote);
+        return -2;
+    }
+    fprintf(stderr, "running in client mode with remote: %s\n", args->remote);
+
+    /*绑定本地端口*/
     int sockfd = setup_socket(inet_addr("0.0.0.0"), 32000);
     if (sockfd < 0) {
         fprintf(stderr, "unable to create socket\n");
@@ -331,12 +299,12 @@ int socket_connect(struct args *args, struct sockaddr_in *remote)
     sprintf(request.username, args->username);
     sprintf(request.password, args->password);
 
-    struct tap_login_thread_t *thread_t = malloc(sizeof(struct tap_login_thread_t));
+    struct tap_cmd_t thread_t;
+    thread_t.sockfd = sockfd;
+    thread_t.remote_real = remote;
+    thread_t.request_real = &request;
 
-    thread_t->sockfd = sockfd;
-    memcpy(&thread_t->remote_real, remote, sizeof(struct sockaddr_in));
-    memcpy(&thread_t->request_real, &request, sizeof(struct tap_login_request_t));
-    while(tap_auth_login(thread_t))
+    while(tap_login_req(&thread_t))
     {
         printf("login auth fail \r\n");
         if(!args->repeat)
@@ -344,32 +312,13 @@ int socket_connect(struct args *args, struct sockaddr_in *remote)
         sleep(3);
     }
 
-    tap_auth_keeplive_process(thread_t);
     return sockfd;
 }
 
 int run_tunnel(struct args *args, sigset_t *orig_mask) 
 {
+    int sockfd;
     struct sockaddr_in remote;
-    memset(&remote, 0, sizeof remote);
-
-    remote.sin_family = AF_INET;
-    remote.sin_port = htons(32000);
-    remote.sin_addr.s_addr = inet_addr(args->remote);
-
-    if (remote.sin_addr.s_addr == INADDR_NONE) {
-        fprintf(stderr, "failed to parse remote: %s\n", args->remote);
-        return 2;
-    }
-    fprintf(stderr, "running in client mode with remote: %s\n", args->remote);
-
-    /*连接服务器*/
-    int sockfd = socket_connect(args, &remote);
-    if(sockfd < 0)
-    {
-        printf("connect server error\n");
-        return sockfd;
-    }
 
     /*创建虚拟接口*/
     int fd = create_tap(args->iface, device, args->mtu);
@@ -377,6 +326,28 @@ int run_tunnel(struct args *args, sigset_t *orig_mask)
         fprintf(stderr, "unable to create tap device\n");
         return 1;
     }
+
+    /*连接服务器*/
+    sockfd = connect_server(args, &remote);
+    if(sockfd < 0)
+    {
+        printf("connect server error\n");
+        return sockfd;
+    }
+
+    /*启动心跳线程*/
+    pthread_t tid;
+    struct tap_cmd_t thread_t;
+    thread_t.sockfd = sockfd;
+    thread_t.remote_real = &remote;
+    if(pthread_create(&tid,NULL,(void *)tap_auth_keeplive_timer, &thread_t))
+    {
+        printf("create pthread error!\n");
+        return -1; 
+    }
+
+    /*启动命令处理任务*/
+    //cmd_recv_handle();
 
     // circular queues
     struct frame recv_queue[RECV_QUEUE] = {0};
@@ -461,7 +432,8 @@ int run_tunnel(struct args *args, sigset_t *orig_mask)
             send_len -= 1;
 
 
-            ssize_t n = sendto(sockfd, f->data, f->len, 0, (struct sockaddr *) &remote, sizeof remote);
+            ssize_t n = sendto(sockfd, f->data, f->len, 0, 
+                    (struct sockaddr *) &remote, sizeof remote);
             if (n < 0) {
                 perror("sendto");
                 //return 4;
