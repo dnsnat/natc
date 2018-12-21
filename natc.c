@@ -192,8 +192,6 @@ void *tap_auth_keeplive_timer(void *data)
 
     /*认证和心跳*/
     struct tap_login_request_t request = {{0xFF,0xFF,0xFF,0xFF,0xFF,0xFF}, {0,0,0,0,0,0}, {0xF0, 0xF0}, 1, LOGIN_REQUEST, "admin", "admin"};
-    //sprintf(request.username, args->username);
-    //sprintf(request.password, args->password);
     memcpy(request.l_mac, macaddr, sizeof(request.l_mac));
     memcpy(request.tun_ip, if_ip, sizeof(request.tun_ip));
     request.status = KEEPLIVE_TIME;
@@ -201,34 +199,8 @@ void *tap_auth_keeplive_timer(void *data)
     /*nat超时-经过测试本地nat没到3分钟就超时了 arp 默认30秒*/
     while(1)
     {
-
         /*二层认证并保持连接 每隔60S发送一次 三分钟没收到则认为超时*/
-
         tap_cmd_send(thread_t);
-#if 0
-        struct tm *now_time; //实例化tm结构指针    
-        time_t now;         //实例化time_t结构    
-        time(&now);   
-        now_time = localtime(&now);   
-        tap_auth_send_timer(thread_t);
-        if((now_time->tm_min - recv_min) > 2)
-        {
-            printf("连接超时 ...\r\n");
-            sleep(10); 
-            continue;
-        }
-#endif
-
-#if 0
-        if(NetPing("10.10.0.1"))
-        {
-            printf("ping超时 ...\r\n");
-            //run_dhcp_thread("tap0");
-            sleep(10);
-            continue;
-        }
-#endif
-
         sleep(60);  
     }
     return 0;
