@@ -1,22 +1,16 @@
 CFLAGS ?=
 LDflag ?=
 
-all:		libdhclient.a
+C_SRCS  := $(wildcard *.c)
+C_OBJS  := $(C_SRCS:.c=.o)
 
-libdhclient.a:	dhclient.o dhcp.o net.o
-			$(AR) rcs "$@" $^
+libdhclient.a: $(C_OBJS) 
+	$(AR) rcs "$@" $^
 
-dhclient.o:	dhclient.c
-			$(CC) $(CFLAGS) -c dhclient.c
-
-dhcp.o:		dhcp.c dhcp.h
-			$(CC) $(CFLAGS) -c dhcp.c
-
-net.o:		net.c net.h
-			$(CC) $(CFLAGS) -c net.c
+%.o: %.c
+	$(CC) $(CFLAGS) -c "$<"
 
 clean:
-			rm -f *.o
+	rm -f *.o
+	rm -f libdhclient.a
 
-cleanall:   clean
-			rm -f dhclient

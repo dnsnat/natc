@@ -148,6 +148,7 @@ int NetPing(char *server_ip)
 
 int tap_cmd_send(struct tap_cmd_t *thread_t)
 {
+    printf("send cmd\n");
     ssize_t n = sendto(thread_t->sockfd, thread_t->request_real, sizeof(struct tap_login_request_t), 0, 
             (struct sockaddr *)thread_t->remote_real, sizeof(struct sockaddr));
     if (n < 0) {

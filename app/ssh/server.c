@@ -52,12 +52,13 @@
 /* Preprocessor constants. */
 #define PORT 2222
 #define MAX_LENGTH 4096
-#define MAX_NUM_CLIENTS 64000
+#define MAX_NUM_CLIENTS 12
 #define MAX_EVENTS 2048
 #define SECRET "<cs407rembash>\n"
 #define CHALLENGE "<rembash>\n"
 #define PROCEED "<ok>\n"
 #define ERROR "<error>\n"
+#define SHELL "sh"
 
 /* Client object. */
 typedef enum cstate 
@@ -608,7 +609,6 @@ int open_pty(int client_fd)
  */
 int create_bash_process(char *pty_slave) 
 {
-
     int pty_slave_fd;
 
     if(setsid() == -1) {
@@ -636,7 +636,7 @@ int create_bash_process(char *pty_slave)
 
     close(pty_slave_fd);    /* No longer needed in bash. */
     free(pty_slave);
-    execlp("bash", "bash", NULL);
+    execlp(SHELL, SHELL, NULL);
 
     DTRACE("%ld:Failed to exec bash on SLAVE_FD=%i.\n", (long)getpid(), pty_slave_fd); 
 
