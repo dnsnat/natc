@@ -21,9 +21,14 @@
 typedef enum 
 {
     LOGIN_REQUEST, 
-    LOGIN_SUCCESS,
-    LOGIN_MISTAKE,
+    LOGIN_RESPOND,
     KEEPLIVE_TIME,
+}ECMD;
+
+typedef enum 
+{
+    LOGIN_FALSE, 
+    LOGIN_SUCCESS,
 }ELOGIN;
 
 struct tap_login_request_t
@@ -32,7 +37,7 @@ struct tap_login_request_t
     unsigned char l_mac[6];
     char type[2];           //{0xF0, 0xF0}
 
-    ELOGIN status;
+    ECMD cmd;
     char username[32];  
     char password[128];
 
@@ -45,16 +50,30 @@ struct tap_login_respond_t
     char l_mac[6];
     char type[2];
 
+    ECMD cmd;
     ELOGIN status;
 
     char crc[4];
 };
 
+/*协议类型*/
+struct login_req_t
+{
+    ELOGIN status;
+    char username[32];  
+    char password[128];
+};
+
+struct login_res_t
+{
+    ELOGIN status;
+};
+
 struct tap_keepalive_t
 {
-    unsigned char r_mac[6];
-    unsigned char l_mac[6];
-    char type[2];           //{0xF0, 0xF0}
+    char r_mac[6];
+    char l_mac[6];
+    char type[2];
 
     ELOGIN status;
 

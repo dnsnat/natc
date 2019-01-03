@@ -32,6 +32,7 @@ struct frame
 struct tap_cmd_t{
     int sockfd;
     struct sockaddr_in *remote_real;
+    struct sockaddr_ll *remote_ll;
     struct tap_login_request_t *request_real;
 };
 
