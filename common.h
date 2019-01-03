@@ -31,6 +31,7 @@ typedef enum
     LOGIN_SUCCESS,
 }ELOGIN;
 
+/*隧道协议报文列表*/
 struct tap_login_request_t
 {
     unsigned char r_mac[6];
@@ -42,7 +43,7 @@ struct tap_login_request_t
     char password[128];
 
     char crc[4];
-};
+}__attribute__((packed));
 
 struct tap_login_respond_t
 {
@@ -54,20 +55,7 @@ struct tap_login_respond_t
     ELOGIN status;
 
     char crc[4];
-};
-
-/*协议类型*/
-struct login_req_t
-{
-    ELOGIN status;
-    char username[32];  
-    char password[128];
-};
-
-struct login_res_t
-{
-    ELOGIN status;
-};
+}__attribute__((packed));
 
 struct tap_keepalive_t
 {

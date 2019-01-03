@@ -152,7 +152,7 @@ int tap_login_req(struct tap_cmd_t *thread_t)
         return -1;
     }
 
-    n = recvfrom(thread_t->sockfd, &respond, sizeof(respond), 0, NULL, NULL);
+    n = recv(thread_t->sockfd, &respond, sizeof(respond), 0);
     if(n != sizeof(struct tap_login_respond_t))
     {
         printf("get login status error n = %ld\n", (long)n);
@@ -199,7 +199,11 @@ int fsm_connect(struct args *args, int sockfd)
 void *fsm_connected(void *data)
 {
     struct args *args = (struct args *)data;
-    /*创建通信用的原始套接字*/
+    /*创建通信用的原始套接字, 
+     * 自定义协议是没有以太网头部的 
+     * 因为不知道如何填充mac信息
+     * PF_PACKET也不支持connect
+     * 只能用sendto*/
     int sock_raw_fd = socket(PF_PACKET, SOCK_RAW, htons(ETH_P_NAT));
 
     strncpy(ethreq.ifr_name, device, IFNAMSIZ);   //指定网卡名称
