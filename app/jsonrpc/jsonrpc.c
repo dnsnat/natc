@@ -493,7 +493,7 @@ int status_json_add_uptime(json_t *object_res)
 
 int status_json_add_cpu_cores(json_t *object_res)
 {
-    int num;
+    int num = 1;
     char name[128];
 
     get_cpuinfo(&num, name); //对无类型get函数含有一个形参结构体类弄的指针O

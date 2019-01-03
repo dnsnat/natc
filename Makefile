@@ -4,10 +4,10 @@ AR ?= ar
 machine := $(shell $(CC) -dumpmachine)
 
 #-L./ -Wl,--whole-archive -lresource -Wl,--no-whole-archive
-LDFLAGS := -lonion_static -ljansson -lpthread
-CFLAGS  := 
-#LDFLAGS := -Wl,-dn -lonion_static -ljansson -Wl,-dy -lpthread #--static 
-#CFLAGS  := -std=gnu99 -Wall -Werror  -O3 -fvisibility=hidden -s -Wno-unused-result -Wno-maybe-uninitialized -ffunction-sections -fdata-sections  -Wl,-gc-sections 
+#LDFLAGS := -lonion_static -ljansson -lpthread
+#CFLAGS  := 
+LDFLAGS := -Wl,-dn -lonion_static -ljansson -Wl,-dy -lpthread #--static 
+CFLAGS  := -std=gnu99 -Wall -Werror  -O3 -fvisibility=hidden -s -Wno-unused-result -Wno-maybe-uninitialized -ffunction-sections -fdata-sections  -Wl,-gc-sections 
 
 C_SRCS  := $(wildcard *.c)
 C_OBJS  := $(C_SRCS:.c=.o) ./dhcp/libdhclient.a ./app/jsonrpc/libjsonrpc.a ./app/ssh/libssh.a

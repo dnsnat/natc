@@ -26,23 +26,39 @@ typedef enum
     KEEPLIVE_TIME,
 }ELOGIN;
 
-struct tap_login_request_t{
+struct tap_login_request_t
+{
     unsigned char r_mac[6];
     unsigned char l_mac[6];
     char type[2];           //{0xF0, 0xF0}
-    int version;
+
     ELOGIN status;
     char username[32];  
     char password[128];
-    char tun_ip[32];
+
+    char crc[4];
 };
 
-struct tap_login_respond_t{
+struct tap_login_respond_t
+{
     char r_mac[6];
     char l_mac[6];
     char type[2];
-    int version;
+
     ELOGIN status;
+
+    char crc[4];
+};
+
+struct tap_keepalive_t
+{
+    unsigned char r_mac[6];
+    unsigned char l_mac[6];
+    char type[2];           //{0xF0, 0xF0}
+
+    ELOGIN status;
+
+    char crc[4];
 };
 
 #endif
