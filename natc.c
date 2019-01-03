@@ -312,7 +312,7 @@ int run_tunnel(struct args *args, sigset_t *orig_mask)
     struct tap_cmd_t thread_t;
     thread_t.sockfd = sockfd;
     //thread_t.remote_real = &remote;
-    if(pthread_create(&tid,NULL,(void *)tap_auth_keeplive_timer, &thread_t))
+    if(pthread_create(&tid, NULL, (void *)tap_auth_keeplive_timer, &thread_t))
     {
         printf("create pthread error!\n");
         return -1; 
