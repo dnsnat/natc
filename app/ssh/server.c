@@ -155,10 +155,12 @@ void *ssh_main(void *args)
     }
 
     /* Forces child processes to be automatically discarded when they terminate. */
+#if 0
     if(signal(SIGCHLD, SIG_IGN) == SIG_ERR) {
         perror("(Main) signal(): Error setting SIGCHLD to SIG_IGN.");
         exit(EXIT_FAILURE);
     }
+#endif
 
     epoll_listener();
     handle_io(1);

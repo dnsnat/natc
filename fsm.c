@@ -58,46 +58,6 @@ int getip = 0;
 int sock_raw_fd;
 struct ifreq ethreq;     //网络接口地址
 
-int Ping(char *server_ip)
-{
-    pid_t pid;
-    int i = 0;
-    int stat;
-    const int loopCnt = 1; //ping 3 times
-
-    while(i < loopCnt)
-    {
-        if((pid = vfork()) < 0)
-        {
-            printf("vfork error!");
-            return -1;
-        }
-        else if(pid == 0)
-        {
-            if( execlp("ping", "ping", "-c", "1","-W", "3", server_ip, (char *)0) < 0)
-            {
-                printf("execlp 'ping -c 1 %s' error!\r\n", server_ip);
-                return -1;
-            }
-        }
-
-        waitpid(pid , &stat, WUNTRACED);
-        if (stat == 0)
-        {
-            printf("ping successful pid=%d\r\n", pid);
-            return 0;
-        }
-        else
-        {
-            printf("ping error!, can not connect to %s\r\n", server_ip);
-        }
-        usleep(50);
-        i++;
-    }
-
-    return -1;
-}
-
 int tap_cmd_send(char *buf, int len)
 {
     printf("send cmd\n");
@@ -131,11 +91,9 @@ int tap_cmd_recv(char *buf, int len)
 {
     printf("recv cmd\n");
     int n = recv(sock_raw_fd, buf, len, 0);
-    if(n <= 0)
+    if(n <= 0 && n != -1)
         printf("recv cmd error n = %ld\n", (long)n);
-
     /*此处应该添加crc校验*/
-
     return n;
 }
 
@@ -247,6 +205,11 @@ int fsm_socket()
     //memcpy(fromaddr.sll_addr,src_mac, ETH_ALEN);
     bind(sock_raw_fd, (struct sockaddr*)&fromaddr,sizeof(struct sockaddr));
 
+    /*设置连接属性*/
+    struct timeval timeout= {10, 0}; //10S 超时
+    setsockopt(sock_raw_fd, SOL_SOCKET, SO_RCVTIMEO, (char*)&timeout, sizeof(timeout));
+
+
     return sock_raw_fd;
 }
 
@@ -269,7 +232,9 @@ void *fsm_keep_task(void *data)
 
         sleep(1);
 
-        if(Ping("10.10.0.1") == 0)
+        int n = system("ping 10.10.0.1 -c 1 -w 3");
+        printf("n == %d\n", n);
+        if(n == 0)
         {
             getip = 1;
             printf("getip successful\r\n");
@@ -311,6 +276,14 @@ void *fsm_recv_task(void *data)
             case LOGIN_ENQUIRE:
                 printf("recv LOGIN_ENQUIRE\n");
                 fsm_login(args);
+                sleep(1);
+                for(int i = 0; i < 10; i++)
+                {
+                    if(system("ping 10.10.0.1 -c 1 -w 3") == 0)
+                        break;
+                    sleep(1);
+                }
+
                 break;
             default:
                 break;
