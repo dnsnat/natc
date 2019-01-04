@@ -1,16 +1,16 @@
 /*
  * =====================================================================================
  *
- *       Filename:  lib.h
+ *       Filename:  common.h
  *
- *    Description:  
+ *    Description:  协议公共报文定义
  *
  *        Version:  1.0
  *        Created:  08/15/2018 11:04:04 AM
  *       Revision:  none
  *       Compiler:  gcc
  *
- *         Author:  YOUR NAME (), 
+ *         Author:  疯狂十六进制 
  *   Organization:  
  *
  * =====================================================================================
@@ -22,6 +22,7 @@ typedef enum
 {
     LOGIN_REQUEST, 
     LOGIN_RESPOND,
+    LOGIN_ENQUIRE,
     KEEPLIVE_TIME,
 }ECMD;
 
@@ -63,9 +64,9 @@ struct tap_keepalive_t
     char l_mac[6];
     char type[2];
 
-    ELOGIN status;
+    ECMD cmd;
 
     char crc[4];
-};
+}__attribute__((packed));
 
 #endif
