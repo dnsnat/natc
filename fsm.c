@@ -107,13 +107,13 @@ int tap_cmd_send(char *buf, int len)
         return -1;
     }
 
+    /*此处应该添加crc校验*/
     memcpy(buf + 6, macaddr, sizeof(macaddr));
 
     /*将网络接口赋值给原始套接字地址结构*/
     struct sockaddr_ll sll;     //原始套接字地址结构
     bzero(&sll, sizeof(sll));
     sll.sll_ifindex = ethreq.ifr_ifindex;
-
     ssize_t n = sendto(sock_raw_fd, buf, len, 0, 
             (struct sockaddr *)&sll, sizeof(sll));
     if (n < 0) {
@@ -133,6 +133,8 @@ int tap_cmd_recv(char *buf, int len)
     int n = recv(sock_raw_fd, buf, len, 0);
     if(n <= 0)
         printf("recv cmd error n = %ld\n", (long)n);
+
+    /*此处应该添加crc校验*/
 
     return n;
 }
@@ -174,7 +176,7 @@ int tap_login_req(struct tap_login_request_t *request)
 }
 
 /*登录服务器*/
-int fsm_login(struct args *args, int sockfd)
+int fsm_login(struct args *args)
 {
     /*发起认证*/
     struct tap_login_request_t request = {{0xFF,0xFF,0xFF,0xFF,0xFF,0xFF}, {0,0,0,0,0,0}, {0xF0, 0xF0}, LOGIN_REQUEST};
@@ -248,12 +250,13 @@ int fsm_socket()
     return sock_raw_fd;
 }
 
+/*keepalive*/
 void *fsm_keep_task(void *data)
 {
     struct args *args = (struct args *)data;
 
     /*登录服务器*/
-    fsm_login(args, sock_raw_fd);
+    fsm_login(args);
 
     /*获取到ip*/
     while(!getip)
@@ -286,6 +289,7 @@ void *fsm_keep_task(void *data)
     return NULL;
 }
 
+/*协议包全部在此接收*/
 void *fsm_recv_task(void *data)
 {
     struct args *args = (struct args *)data;
@@ -306,11 +310,7 @@ void *fsm_recv_task(void *data)
         {
             case LOGIN_ENQUIRE:
                 printf("recv LOGIN_ENQUIRE\n");
-                /*发送认证报文*/
-                struct tap_login_request_t request = {{0xFF,0xFF,0xFF,0xFF,0xFF,0xFF}, {0,0,0,0,0,0}, {0xF0, 0xF0}, LOGIN_REQUEST};
-                sprintf(request.username, args->username);
-                sprintf(request.password, args->password);
-                tap_cmd_send((char *)&request, sizeof(request));
+                fsm_login(args);
                 break;
             default:
                 break;

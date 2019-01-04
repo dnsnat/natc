@@ -58,6 +58,17 @@ struct tap_login_respond_t
     char crc[4];
 }__attribute__((packed));
 
+struct tap_login_enquire_t
+{
+    char r_mac[6];
+    char l_mac[6];
+    char type[2];
+
+    ECMD cmd;
+
+    char crc[4];
+}__attribute__((packed));
+
 struct tap_keepalive_t
 {
     char r_mac[6];
