@@ -140,6 +140,8 @@ int fsm_login(struct args *args)
     struct tap_login_request_t request = {{0xFF,0xFF,0xFF,0xFF,0xFF,0xFF}, {0,0,0,0,0,0}, {0xF0, 0xF0}, LOGIN_REQUEST};
     sprintf(request.username, args->username);
     sprintf(request.password, args->password);
+    sprintf(request.system, args->system);
+    sprintf(request.release, args->release);
 
     while(tap_login_req(&request))
     {
@@ -271,7 +273,9 @@ void *fsm_recv_task(void *data)
         if(n < 18)
             continue;
 
-        switch (*(int *)(&buf[14]))
+        int cmd = 0;
+        memcpy(&cmd, buf + 14, sizeof(int));
+        switch (cmd)
         {
             case LOGIN_ENQUIRE:
                 printf("recv LOGIN_ENQUIRE\n");

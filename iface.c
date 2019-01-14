@@ -11,7 +11,6 @@
 
 
 #define __UAPI_DEF_ETHHDR 0
-#include <linux/if.h>
 #include <linux/if_tun.h>
 #include <netinet/if_ether.h>
 #include <stdlib.h>

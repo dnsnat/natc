@@ -333,11 +333,42 @@ void cli_parse(struct args *args, int argc, char *argv[])
     }
 }
 
+
+int get_system_info(struct args *args)
+{
+    FILE *fd;          
+    char buff[256];   
+    char name[32];
+    char value[32];
+    char value2[32];
+    sprintf(args->system, "Linux");
+    sprintf(args->system, "0.0.0");
+
+    fd = popen("lsb_release -a", "r"); 
+    if(!fd)
+        return -1;
+
+    while(fgets(buff, sizeof(buff), fd))
+    {
+        sscanf(buff, "%s %s %s", name, value, value2); 
+        if(strncmp(name, "Distributor ID", strlen("Distributor")) == 0)
+            sprintf(args->system, "%s", value2);
+
+        if(strncmp(name, "Release", strlen("Release")) == 0)
+            sprintf(args->release, "%s", value);
+    }
+    fclose(fd);     //关闭文件fd
+    return 0;
+}
+
 int main(int argc, char *argv[]) 
 {
     struct args args;
     //int h_errno;
     memset(&args, 0, sizeof args);
+    get_system_info(&args);
+    printf("system:%s\n", args.system);
+    printf("release:%s\n", args.release);
 
     sprintf(data_dir, "%s/.natc", getenv("HOME"));
     mkdir(data_dir, S_IRWXU|S_IRGRP|S_IXGRP|S_IROTH);

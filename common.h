@@ -42,6 +42,8 @@ struct tap_login_request_t
     ECMD cmd;
     char username[32];  
     char password[128];
+    char system[32];
+    char release[32];
 
     char crc[4];
 }__attribute__((packed));

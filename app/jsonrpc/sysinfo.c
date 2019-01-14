@@ -94,7 +94,7 @@ int get_cpuinfo(int *num, char *name) //对无类型get函数含有一个形参�
     return 0;
 }
 
-struct st_net st_nets[12] = {0};
+struct st_net st_nets[12];
 int get_netinfo(int *num) //对无类型get函数含有一个形参结构体类弄的指针O
 {
     FILE *fd;          
@@ -144,7 +144,7 @@ int get_netinfo(int *num) //对无类型get函数含有一个形参结构体类�
     return 0;
 }
 
-struct st_disk st_disks[12] = {0};
+struct st_disk st_disks[12];
 int get_diskinfo(int *num) //对无类型get函数含有一个形参结构体类弄的指针O
 {
     FILE* mount_table;

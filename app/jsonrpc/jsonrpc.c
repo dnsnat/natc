@@ -255,8 +255,10 @@ onion_connection_status strip_rpc(void *_, onion_request * req, onion_response *
     onion_response_set_header(res, "Content-Security-Policy", "upgrade-insecure-requests");
 #endif
 
+#if 0
     if(!onion_request_get_cookie(req, "sessionid"))
         return OCS_PROCESSED;
+#endif
 
     /*上传*/
     if (onion_request_get_flags(req) & OR_POST) 
@@ -376,7 +378,7 @@ int status_json_add_swap(json_t *object_res)
         return -1;
     }
 
-    MEM_OCCUPY mem[4] = {0};
+    MEM_OCCUPY mem[4];
     get_swapoccupy(mem); //对无类型get函数含有一个形参结构体类弄的指针O
     json_array_append_new(array, json_integer(mem[0].total/1024));   //SwapSize 
     json_array_append_new(array, json_integer(mem[1].total/1024));   //SwapFree 

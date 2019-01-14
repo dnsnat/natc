@@ -21,6 +21,8 @@ struct args
     unsigned int repeat;
     char username[32];
     char password[128];
+    char system[32];
+    char release[32];
 };
 
 struct frame 
