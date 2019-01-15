@@ -3,11 +3,15 @@
 #include <string.h>
 #include <unistd.h>
 
-#include <linux/if_arp.h>
+#include <net/if.h>
+#include <net/if_arp.h>
+#include <linux/if_ether.h>
+#include <fcntl.h>
 #include <sys/time.h>
 #include <sys/socket.h>
 #include <netinet/udp.h>
 #include <arpa/inet.h>
+#include <netpacket/packet.h>
 
 #include <pthread.h>
 

@@ -338,9 +338,9 @@ int get_system_info(struct args *args)
 {
     FILE *fd;          
     char buff[256];   
-    char name[32];
-    char value[32];
-    char value2[32];
+    char name[128];
+    char value[128];
+    char value2[128];
     sprintf(args->system, "Linux");
     sprintf(args->system, "0.0.0");
 

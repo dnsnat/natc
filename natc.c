@@ -150,11 +150,11 @@ int run_tunnel(struct args *args, sigset_t *orig_mask)
     }
 
     // circular queues
-    struct frame recv_queue[RECV_QUEUE] = {0};
+    struct frame recv_queue[RECV_QUEUE];
     size_t recv_idx = 0;
     size_t recv_len = 0;
 
-    struct frame send_queue[SEND_QUEUE] = {0};
+    struct frame send_queue[SEND_QUEUE];
     size_t send_idx = 0;
     size_t send_len = 0;
 

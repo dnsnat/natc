@@ -58,7 +58,7 @@
 #define CHALLENGE "<rembash>\n"
 #define PROCEED "<ok>\n"
 #define ERROR "<error>\n"
-#define SHELL "sh"
+char SHELL[32] = "sh";
 
 /* Client object. */
 typedef enum cstate 
@@ -125,6 +125,9 @@ int listen_fd;
 //int main(int argc, char *argv[]) {
 void *ssh_main(void *args) 
 {
+    if(!access("/bin/bash",0))
+        strncpy(SHELL, "bash", sizeof(SHELL) -1);
+
     tpool_init(handle_io);
 
     if((epoll_fd = epoll_create1(EPOLL_CLOEXEC)) == -1) {
