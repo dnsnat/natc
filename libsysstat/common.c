@@ -766,11 +766,11 @@ char *strtolower(char *str)
  * Path to the persistent type name directory, or NULL if access is denied.
  ***************************************************************************
 */
-char *get_persistent_type_dir(char *type)
+char *get_persistent_type_dir(char type[MAX_FILE_LEN])
 {
-	static char dir[32];
+	static char dir[32 + MAX_FILE_LEN];
 
-	snprintf(dir, 32, "%s-%s", DEV_DISK_BY, type);
+	snprintf(dir, 32 + MAX_FILE_LEN - 1, "%s-%s", DEV_DISK_BY, type);
 
 	if (access(dir, R_OK)) {
 		return (NULL);

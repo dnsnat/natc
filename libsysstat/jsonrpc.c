@@ -55,10 +55,10 @@
 #include <jansson.h>
 
 #include "jsonrpc.h"
+#include "common.h"
 #include "sysinfo.h"
 #include "compat_getpwuid.h"
 
-int const MAX_STR_LEN = 1024;
 pthread_mutex_t rpc_lock;  
 void md5(const uint8_t *initial_msg, size_t initial_len, uint8_t *digest);
 
@@ -119,7 +119,7 @@ int dispach_list(onion_response * res, json_t *object)
 		return -1;
 	}
  
-    char dir_name[1024];
+    char dir_name[MAX_FILE_LEN];
     sprintf(dir_name, ".%s", path);
     //json_decref(iter_values);
 
@@ -178,8 +178,8 @@ int dispach_list(onion_response * res, json_t *object)
 
 #if 1
         struct stat file_stat;
-        char filename_full[256];
-        sprintf(filename_full, "%s%s", dir_name, filename->d_name);
+        char filename_full[MAX_FILE_LEN + NAME_MAX + 1];
+        snprintf(filename_full, MAX_FILE_LEN + NAME_MAX, "%s%s", dir_name, filename->d_name);
         stat(filename->d_name, &file_stat);
         char mode_buf[12];
         getMode(file_stat.st_mode, mode_buf);

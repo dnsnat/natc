@@ -233,7 +233,7 @@ __nr_t get_diskstats_dev_nr(int count_part, int only_used_dev)
 {
 	FILE *fp;
 	char line[256];
-	char dev_name[MAX_NAME_LEN];
+	char dev_name[NAME_MAX];
 	__nr_t dev = 0;
 	int i;
 	unsigned long rd_ios, wr_ios;

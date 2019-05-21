@@ -333,7 +333,6 @@ void cli_parse(struct args *args, int argc, char *argv[])
     }
 }
 
-
 int get_system_info(struct args *args)
 {
     FILE *fd;          

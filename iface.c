@@ -21,7 +21,7 @@ unsigned char macaddr[6]={0}; //ETH_ALEN（6）是MAC地址长度
 int get_file_mac()
 {
     FILE *stream;
-    char macpath[32];
+    char macpath[128];
     sprintf(macpath, "%s/_mac", data_dir);
 
     /*openafileforupdate*/
@@ -38,7 +38,7 @@ int get_file_mac()
 int set_file_mac()
 {
     FILE *stream;
-    char macpath[32];
+    char macpath[128];
     sprintf(macpath, "%s/_mac", data_dir);
 
     stream = fopen(macpath, "w");

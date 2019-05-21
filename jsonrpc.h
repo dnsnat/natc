@@ -6,7 +6,7 @@
  *    Description:  
  *
  *        Version:  1.0
- *        Created:  12/21/2018 10:16:38 AM
+ *        Created:  05/21/2019 10:18:22 AM
  *       Revision:  none
  *       Compiler:  gcc
  *
@@ -19,5 +19,8 @@
 #ifndef _JSONRPC_H
 #define _JSONRPC_H
 
-int file_rpc_thread();
+#define JSONRPC_PORT
+#define MAXLINE 80
+int jsonrpc_thread();
+
 #endif

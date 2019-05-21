@@ -19,10 +19,10 @@ struct args
     int gid;
     unsigned int mtu;
     unsigned int repeat;
-    char username[32];
+    char username[128];
     char password[128];
-    char system[32];
-    char release[32];
+    char system[128];
+    char release[128];
 };
 
 struct frame 

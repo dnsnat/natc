@@ -67,20 +67,20 @@
 #define K_JSON		"JSON"
 
 /* Files */
-#define STAT			"/proc/stat"
-#define UPTIME			"/proc/uptime"
-#define DISKSTATS		"/proc/diskstats"
-#define INTERRUPTS		"/proc/interrupts"
-#define MEMINFO			"/proc/meminfo"
-#define SYSFS_BLOCK		"/sys/block"
+#define STAT			    "/proc/stat"
+#define UPTIME			    "/proc/uptime"
+#define DISKSTATS		    "/proc/diskstats"
+#define INTERRUPTS		    "/proc/interrupts"
+#define MEMINFO			    "/proc/meminfo"
+#define SYSFS_BLOCK		    "/sys/block"
 #define SYSFS_DEV_BLOCK		"/sys/dev/block"
 #define SYSFS_DEVCPU		"/sys/devices/system/cpu"
 #define SYSFS_TIME_IN_STATE	"cpufreq/stats/time_in_state"
-#define S_STAT			"stat"
-#define DEVMAP_DIR		"/dev/mapper"
-#define DEVICES			"/proc/devices"
+#define S_STAT			    "stat"
+#define DEVMAP_DIR		    "/dev/mapper"
+#define DEVICES			    "/proc/devices"
 #define SYSFS_USBDEV		"/sys/bus/usb/devices"
-#define DEV_DISK_BY		"/dev/disk/by"
+#define DEV_DISK_BY		    "/dev/disk/by"
 #define SYSFS_IDVENDOR		"idVendor"
 #define SYSFS_IDPRODUCT		"idProduct"
 #define SYSFS_BMAXPOWER		"bMaxPower"
@@ -89,8 +89,7 @@
 #define SYSFS_FCHOST		"/sys/class/fc_host"
 
 #define MAX_FILE_LEN		512
-#define MAX_PF_NAME		1024
-#define MAX_NAME_LEN		128
+#define MAX_PF_NAME		    1024
 
 #define IGNORE_VIRTUAL_DEVICES	FALSE
 #define ACCEPT_VIRTUAL_DEVICES	TRUE

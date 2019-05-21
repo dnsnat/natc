@@ -724,7 +724,7 @@ __nr_t read_diskstats_io(struct stats_io *st_io)
 {
 	FILE *fp;
 	char line[1024];
-	char dev_name[MAX_NAME_LEN];
+	char dev_name[NAME_MAX];
 	unsigned int major, minor;
 	unsigned long rd_ios, wr_ios, rd_sec, wr_sec;
 
@@ -778,7 +778,7 @@ __nr_t read_diskstats_disk(struct stats_disk *st_disk, __nr_t nr_alloc,
 {
 	FILE *fp;
 	char line[1024];
-	char dev_name[MAX_NAME_LEN];
+	char dev_name[NAME_MAX];
 	struct stats_disk *st_disk_i;
 	unsigned int major, minor, rd_ticks, wr_ticks, tot_ticks, rq_ticks;
 	unsigned long rd_ios, wr_ios, rd_sec, wr_sec;
