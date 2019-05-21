@@ -211,7 +211,7 @@ cJSON *jsonrpc_network()
         cJSON_AddItemToArray(array, array_sub);
     }
 
-    return 0;
+    return array;
 }
 
 extern int mpstat_main(int argc, char **argv);
@@ -242,7 +242,6 @@ cJSON *jsonrpc_cpus()
 
     for(i = 0; i <= cpu_num && i < 12; i++)
     {
-        char tmp[32];
         array_sub = cJSON_CreateArray();
 
         if(i == 0)
@@ -250,26 +249,16 @@ cJSON *jsonrpc_cpus()
         else
             cJSON_AddItemToArray(array_sub, cJSON_CreateNumber(i - 1));
 
-        sprintf(tmp, "%f", ((int)(st_allcpu[i].cpu_user*100+0.5))/100.0);
-        cJSON_AddItemToArray(array_sub, cJSON_CreateString(tmp));
-        sprintf(tmp, "%f", ((int)(st_allcpu[i].cpu_nice*100+0.5))/100.0);
-        cJSON_AddItemToArray(array_sub, cJSON_CreateString(tmp));
-        sprintf(tmp, "%f", ((int)(st_allcpu[i].cpu_sys*100+0.5))/100.0);
-        cJSON_AddItemToArray(array_sub, cJSON_CreateString(tmp));
-        sprintf(tmp, "%f", ((int)(st_allcpu[i].cpu_idle*100+0.5))/100.0);
-        cJSON_AddItemToArray(array_sub, cJSON_CreateString(tmp));
-        sprintf(tmp, "%f", ((int)(st_allcpu[i].cpu_iowait*100+0.5))/100.0);
-        cJSON_AddItemToArray(array_sub, cJSON_CreateString(tmp));
-        sprintf(tmp, "%f", ((int)(st_allcpu[i].cpu_steal*100+0.5))/100.0);
-        cJSON_AddItemToArray(array_sub, cJSON_CreateString(tmp));
-        sprintf(tmp, "%f", ((int)(st_allcpu[i].cpu_hardirq*100+0.5))/100.0);
-        cJSON_AddItemToArray(array_sub, cJSON_CreateString(tmp));
-        sprintf(tmp, "%f", ((int)(st_allcpu[i].cpu_softirq*100+0.5))/100.0);
-        cJSON_AddItemToArray(array_sub, cJSON_CreateString(tmp));
-        sprintf(tmp, "%f", ((int)(st_allcpu[i].cpu_guest*100+0.5))/100.0);
-        cJSON_AddItemToArray(array_sub, cJSON_CreateString(tmp));
-        sprintf(tmp, "%f", ((int)(st_allcpu[i].cpu_guest_nice*100+0.5))/100.0);
-        cJSON_AddItemToArray(array_sub, cJSON_CreateString(tmp));
+        cJSON_AddItemToArray(array_sub, cJSON_CreateNumber(((int)(st_allcpu[i].cpu_user*100+0.5))/100.0));
+        cJSON_AddItemToArray(array_sub, cJSON_CreateNumber(((int)(st_allcpu[i].cpu_nice*100+0.5))/100.0));
+        cJSON_AddItemToArray(array_sub, cJSON_CreateNumber(((int)(st_allcpu[i].cpu_sys*100+0.5))/100.0));
+        cJSON_AddItemToArray(array_sub, cJSON_CreateNumber(((int)(st_allcpu[i].cpu_idle*100+0.5))/100.0));
+        cJSON_AddItemToArray(array_sub, cJSON_CreateNumber(((int)(st_allcpu[i].cpu_iowait*100+0.5))/100.0));
+        cJSON_AddItemToArray(array_sub, cJSON_CreateNumber(((int)(st_allcpu[i].cpu_steal*100+0.5))/100.0));
+        cJSON_AddItemToArray(array_sub, cJSON_CreateNumber(((int)(st_allcpu[i].cpu_hardirq*100+0.5))/100.0));
+        cJSON_AddItemToArray(array_sub, cJSON_CreateNumber(((int)(st_allcpu[i].cpu_softirq*100+0.5))/100.0));
+        cJSON_AddItemToArray(array_sub, cJSON_CreateNumber(((int)(st_allcpu[i].cpu_guest*100+0.5))/100.0));
+        cJSON_AddItemToArray(array_sub, cJSON_CreateNumber(((int)(st_allcpu[i].cpu_guest_nice*100+0.5))/100.0));
 
         cJSON_AddItemToArray(array, array_sub);
     }
@@ -443,7 +432,7 @@ char *jsonrpc_status()
     cJSON_AddItemToObject(root, "Process_10T_CPU", jsonrpc_10t_cpu());
     cJSON_AddItemToObject(root, "Process_10T_Mem", jsonrpc_10t_mem());
 
-    out = cJSON_Print(root);
+    out = cJSON_PrintUnformatted(root);
     cJSON_Delete(root);
 
     return out;
