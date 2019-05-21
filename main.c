@@ -16,12 +16,11 @@
 #include <netdb.h>
 #include <arpa/inet.h>
 
+#include "jsonrpc.h"
 #include "natc.h"
 
 const char *VERSION = "0.0.6";
 const int QUIT_SIGNALS[] = {SIGTERM, SIGINT, SIGHUP, SIGQUIT};
-int file_rpc_thread(struct args *args);
-int ssh_server_thread();
 void md5(const uint8_t *initial_msg, size_t initial_len, uint8_t *digest);
 
 char exit_wanted;
@@ -409,7 +408,8 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    ssh_server_thread();
-    file_rpc_thread(&args);
+    //ssh_server_thread();
+    //file_rpc_thread(&args);
+    jsonrpc_thread();
     return run_tunnel(&args, &orig_mask);
 }

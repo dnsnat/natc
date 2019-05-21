@@ -12,9 +12,9 @@
 #      Created:
 #     Revision: ---
 #
-#       Author:
-#      Company:
-#        Email:
+#       Author:	dnsnat
+#      Company: dnsnat.com
+#        Email: 393731869@qq.com
 #
 #        Notes: This is a GNU make (gmake) makefile.
 #               C   extension   :  c
@@ -27,7 +27,7 @@
 MACHINE 	   		:= $(shell $(CC) -dumpmachine)
 
 # DEBUG can be set to YES to include debugging info, or NO otherwise
-DEBUG          	:= YES
+DEBUG          	:= NO
 
 # PROFILE can be set to YES to include profiling info, or NO otherwise
 PROFILE        	:= NO
@@ -36,7 +36,7 @@ PROFILE        	:= NO
 EXECUTABLE      := $(MACHINE)-natc
 
 # ------------  list of all source files  --------------------------------------
-SOURCES         := $(wildcard *.c ./dhcp/*.c ./libsysstat/*.c ./app/ssh/*.c)
+SOURCES         := $(wildcard *.c ./dhcp/*.c ./lib/*.c)
 
 # ------------  compiler  ------------------------------------------------------
 CC              ?= gcc
@@ -47,8 +47,8 @@ DEBUG_CFLAGS    := -std=gnu99 -Wall -Werror  -O3 -fvisibility=hidden -s -Wno-unu
 RELEASE_CFLAGS  := -std=gnu99 -Wall -Werror  -O3 -fvisibility=hidden -s -Wno-unused-result -Wno-maybe-uninitialized -ffunction-sections -fdata-sections  -Wl,-gc-sections
 
 # ------------  linker flags  --------------------------------------------------
-DEBUG_LDFLAGS    := -Wl,-dn -lonion_static -ljansson -Wl,-dy  -g #--static 
-RELEASE_LDFLAGS  := -Wl,-dn -lonion_static -ljansson -Wl,-dy     #--static 
+DEBUG_LDFLAGS    := -g
+RELEASE_LDFLAGS  :=  
 
 ifeq (YES, ${DEBUG})
   CFLAGS       := ${DEBUG_CFLAGS}
@@ -67,7 +67,7 @@ ifeq (YES, ${PROFILE})
 endif
 
 # ------------  additional system include directories  -------------------------
-GLOBAL_INC_DIR  =
+GLOBAL_INC_DIR  = ./lib
 
 # ------------  private include directories  -----------------------------------
 LOCAL_INC_DIR   = $(HOME)/include

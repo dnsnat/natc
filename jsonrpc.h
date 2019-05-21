@@ -19,8 +19,22 @@
 #ifndef _JSONRPC_H
 #define _JSONRPC_H
 
-#define JSONRPC_PORT
-#define MAXLINE 80
+#define JSONRPC_PORT 20003
+#define MAXBUF       128
+
+typedef enum 
+{
+    GET_STATUS, 
+
+}ERPC;
+
+struct rpc_request_t
+{
+    ERPC cmd;
+
+    char crc[4];
+}__attribute__((packed));
+
 int jsonrpc_thread();
 
 #endif
