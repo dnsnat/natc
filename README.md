@@ -14,14 +14,9 @@
 	5.添加了dhcp自动分配ip
 	6.基于
 
-依赖: 编译方法查看build.sh文件
-
-	1. jansson https://github.com/akheron/jansson.git
-	2. onion https://github.com/davidmoreno/onion.git
-
 编译方法:
 
-    ./build.sh
+    make
 
 使用方法: 
 
