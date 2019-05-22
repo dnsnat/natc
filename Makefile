@@ -198,9 +198,9 @@ push:
 								@rm  --force  $(EXECUTABLE) $(OBJECTS) $(PREREQUISITES) *~
 								@rm  --force GPATH   GRTAGS  GTAGS cscope.files .clang_complete
 								@git add -A
-								@read -p "Enter comment: "  comment; \
-								git commit -m $$comment
-								git push
+								@read -p "Enter comment: " comment; \
+								git commit -m "$$comment"
+								@git push
 							 
 
 # ------------ tarball generation ----------------------------------------------
