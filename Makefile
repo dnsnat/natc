@@ -189,7 +189,7 @@ git-push:
 								-rm  --force  $(EXECUTABLE) $(OBJECTS) $(PREREQUISITES) *~
 								-rm  --force GPATH   GRTAGS  GTAGS cscope.files .clang_complete
 								git add -A
-								git commit -m /$"
+								git commit -m /
 								git push
 							 
 
