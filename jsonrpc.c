@@ -43,37 +43,279 @@
 #include "cJSON.h"
 #include "jsonrpc.h"
 
-int sockfd;
-int jsonrpc_socket()
+#include "onion/onion.h"
+#include "onion/dict.h"
+#include "onion/block.h"
+#include "onion/request.h"
+#include "onion/response.h"
+#include "onion/url.h"
+#include "onion/shortcuts.h"
+#include "onion/log.h"
+#include "onion/types.h"
+#include "onion/types_internal.h"
+
+pthread_mutex_t rpc_lock;  
+
+/*file manage rpc*/
+char *getMode(mode_t mode, char *buf) 
 {
-    int sockfd;
-    struct sockaddr_in servaddr;
-
-    /* create a socket */
-    sockfd = socket(AF_INET, SOCK_DGRAM, 0); 
-
-    /* init servaddr */
-    bzero(&servaddr, sizeof(servaddr));
-    servaddr.sin_family      = AF_INET;
-    servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
-    servaddr.sin_port        = htons(JSONRPC_PORT);
-
-    /* bind address and port to socket */
-    if(bind(sockfd, (struct sockaddr *)&servaddr, sizeof(servaddr)) == -1)
-    {
-        perror("bind error");
-        exit(1);
-    }
-
-    return sockfd;
+	if (buf == NULL) {
+		fprintf(stderr, "buf can't be NULL\n");
+		return NULL;
+	}
+ 
+	memset(buf, '-', 9);
+ 
+	if (mode & S_IRUSR)
+		buf[0] = 'r';
+ 
+	if (mode & S_IWUSR)
+		buf[1] = 'w';
+	if (mode & S_IXUSR)
+		buf[2] = 'x';
+	if (mode & S_IRGRP)
+		buf[3] = 'r';
+	if (mode & S_IWGRP)
+		buf[4] = 'w';
+	if (mode & S_IXGRP)
+		buf[5] = 'x';
+	if (mode & S_IROTH)
+		buf[6] = 'r';
+	if (mode & S_IWOTH)
+		buf[7] = 'w';
+	if (mode & S_IXOTH)
+		buf[8] = 'x';
+ 
+	buf[9] = 0;
+	return buf;
 }
 
+int dispach_list(onion_response * res, cJSON* cjson)
+{
+    const char *path = cJSON_GetObjectItem(cjson, "path")->valuestring;
+    if(!path)
+    {
+		printf(" path is null !\r\n");
+		return -1;
+    }
+    printf("path=%s\n", path);
+
+    char dir_name[MAXBUF];
+    snprintf(dir_name, sizeof(dir_name) - 1, ".%s", path);
+
+	// check if dir_name is a valid dir
+	struct stat s;
+	lstat(dir_name , &s);
+	if(!S_ISDIR(s.st_mode))
+	{
+		printf("dir_name is not a valid directory !\r\n");
+		return -1;
+	}
+	
+	struct dirent *filename;    // return value for readdir()
+ 	DIR *dir;                   // return value for opendir()
+	dir = opendir( dir_name );
+	if(NULL == dir)
+	{
+		printf("Can not open dir %s\r\n", dir_name);
+		return -1;
+	}
+	printf("Successfully opened the dir !\r\n");
+	
+    cJSON *object_res = cJSON_CreateObject();
+    if(!object_res)
+    {
+        return 0;
+    }
+    cJSON *array      = cJSON_CreateArray();
+    if(!array)
+    {
+        cJSON_Delete(object_res);
+        return 0;
+    }
+
+    /* read all the files in the dir ~ */
+    while( ( filename = readdir(dir) ) != NULL )
+    {
+        // get rid of "." and ".."
+        if( strcmp( filename->d_name , "." ) == 0 || 
+                strcmp( filename->d_name , "..") == 0    )
+            continue;
+
+        cJSON *object_res_sub = cJSON_CreateObject();
+        if(!object_res)
+        {
+            cJSON_Delete(array);
+            cJSON_Delete(object_res);
+            return 0;
+        }
+
+        cJSON_AddStringToObject(object_res_sub, "name", filename->d_name);
+        if(DT_DIR == filename->d_type) 
+            cJSON_AddStringToObject(object_res_sub, "type", "dir");
+        else
+            cJSON_AddStringToObject(object_res_sub, "type", "file");
+
+#if 1
+        struct stat file_stat;
+        char filename_full[MAXBUF + NAME_MAX + 1];
+        snprintf(filename_full, sizeof(filename_full) - 1, "%s%s", dir_name, filename->d_name);
+        stat(filename->d_name, &file_stat);
+        char mode_buf[12];
+        getMode(file_stat.st_mode, mode_buf);
+        cJSON_AddStringToObject(object_res_sub, "rights", mode_buf);
+        cJSON_AddNumberToObject(object_res_sub, "size", file_stat.st_size);
+
+        char date_time[1024];
+        struct tm now_time;
+        localtime_r(&file_stat.st_atime, &now_time);
+
+        //strftime(date_time, sizeof(date_time), "%Y-%m-%d %H:%M:%S", localtime_r(&file_stat.st_mtime, &t));
+        sprintf(date_time, "%d-%d-%d %d:%d:%d\n", now_time.tm_year + 1900, now_time.tm_mon + 1,
+                now_time.tm_mday, now_time.tm_hour, now_time.tm_min, now_time.tm_sec);
+        cJSON_AddStringToObject(object_res_sub, "date", date_time);
+        //printf("clock_gettime : date_time=%s, tv_nsec=%ld\n", date_time, file_stat.st_mtim.tv_nsec);
+
+#endif
+
+        cJSON_AddItemToArray(array, object_res_sub);
+    }
+
+    cJSON_AddItemToObject(object_res, "result", array);
+
+    char *resstr = cJSON_PrintUnformatted(object_res);
+    cJSON_Delete(object_res);
+
+    printf("result=%s\n",resstr);
+    onion_response_write0(res, resstr);
+    free(resstr);
+    return 0;
+}
+
+const char *find_file_name(const char *name)
+{
+	char *name_start = NULL;
+	int sep = '/';
+	if (NULL == name) {
+			printf("the path name is NULL\n");
+	    return NULL;
+	}
+	name_start = strrchr(name, sep);
+
+	return (NULL == name_start)?name:(name_start + 1);
+}
+
+onion_connection_status strip_rpc(void *_, onion_request * req, onion_response * res) 
+{ 
+    /*上传*/
+    if (onion_request_get_flags(req) & OR_POST) 
+    {
+        int i;
+        for(i = 0; i < 128; i++)
+        {
+            char fileid[32];
+            sprintf(fileid, "file-%d", i);
+            const char *name = onion_request_get_post(req, fileid);
+            const char *filename = onion_request_get_file(req, fileid);
+            if (!name || !filename)
+                break;
+
+            char finalname[1024];
+            snprintf(finalname, sizeof(finalname), "%s/%s", ".", name);
+            ONION_DEBUG("Copying from %s to %s", filename, finalname);
+            onion_shortcut_rename(filename, finalname);
+        }
+        if(i)
+        {
+            char resstr[] = {"{ \"result\": { \"success\": true, \"error\": null } }"};
+            onion_response_write(res, resstr, strlen(resstr));
+            return OCS_PROCESSED;
+        }
+    }
+
+    printf("download:[%s]\n", onion_request_get_fullpath(req));
+    /*下载*/
+    if(onion_request_get_query(req, "action") && onion_request_get_query(req, "path")) 
+        if(strncmp("download", onion_request_get_query(req, "action"), strlen("download")) == 0)
+        {
+            char attachment_filename[1024];
+            sprintf(attachment_filename, "attachment; filename=%s", find_file_name(onion_request_get_query(req, "path")));
+            onion_response_set_header(res, "Content-Disposition", attachment_filename);
+            return onion_shortcut_response_file(onion_request_get_query(req, "path") + 1, req, res);
+        }
+
+    /*post:action*/
+    const onion_block *dreq = onion_request_get_data(req);
+    if (!dreq)
+    {
+        return OCS_PROCESSED;
+    }
+
+    const char *data = onion_block_data(dreq);
+    if (!data)
+        return OCS_PROCESSED;
+
+#if 0
+    void *iter;
+    json_t *object;
+    json_error_t error;
+    object = json_loads(data, 0, &error);
+    if(!object)
+    {
+        fprintf(stderr, "error: on line %d: %s\n", error.line, error.text);
+        return OCS_PROCESSED;
+    }
+
+    iter = json_object_iter_at(object, "action");
+    if(!iter)
+    {
+        fprintf(stderr, "error: on line %d: %s\n", error.line, error.text);
+        return OCS_PROCESSED;
+    }
+
+    //const char *iter_keys = json_object_iter_key(iter);
+    json_t *iter_values   = json_object_iter_value(iter);
+    if(!iter_values)
+        return OCS_PROCESSED;
+
+    const char *action    = json_string_value(iter_values);
+    if(strncmp(action, "list", strlen("list")) == 0)
+        dispach_list(res, object);
+
+    json_decref(object);
+#endif
+
+
+    cJSON* cjson = cJSON_Parse(data); 
+    if(cjson == NULL)
+    {
+        printf("json pack into cjson error...");
+        return OCS_PROCESSED;
+    }
+
+    const char *action = cJSON_GetObjectItem(cjson, "action")->valuestring;
+    if(!action)
+    {
+        cJSON_Delete(cjson);
+        return OCS_PROCESSED;
+    }
+        
+    printf("action : [%s]\n", action);
+
+    if(strncmp(action, "list", strlen("list")) == 0)
+        dispach_list(res, cjson);
+
+    cJSON_Delete(cjson);
+    return OCS_PROCESSED;
+}
+
+/*status_rpc*/
 cJSON *jsonrpc_mem()
 {
     cJSON *array = NULL;
     array = cJSON_CreateArray();
 
-    MEM_OCCUPY mem[4];
+    MEM_OCCUPY mem[4] = {0};
     get_memoccupy(mem); //对无类型get函数含有一个形参结构体类弄的指针O
 
     cJSON_AddItemToArray(array, cJSON_CreateNumber(mem[0].total/1024));
@@ -89,7 +331,7 @@ cJSON *jsonrpc_swap()
     cJSON *array = NULL;
     array = cJSON_CreateArray();
 
-    MEM_OCCUPY mem[4];
+    MEM_OCCUPY mem[4] = {0};
     get_swapoccupy(mem); //对无类型get函数含有一个形参结构体类弄的指针O
 
     cJSON_AddItemToArray(array, cJSON_CreateNumber(mem[0].total/1024));
@@ -127,18 +369,13 @@ cJSON *jsonrpc_disk()
     return array;
 }
 
-cJSON *jsonrpc_time()
+char *jsonrpc_time()
 {
     time_t now; //实例化time_t结构    
     struct tm *timenow; //实例化tm结构指针    
     time(&now);   
     timenow = localtime(&now);   
-
-    cJSON *root = NULL;
-    root = cJSON_CreateObject();
-
-    cJSON_AddStringToObject(root, "Time", asctime(timenow));
-    return root;
+    return asctime(timenow);
 }
 
 cJSON *jsonrpc_user()
@@ -420,7 +657,8 @@ char *jsonrpc_status()
     cJSON_AddItemToObject(root, "Mem", jsonrpc_mem());
     cJSON_AddItemToObject(root, "Swap", jsonrpc_swap());
     cJSON_AddItemToObject(root, "Disk", jsonrpc_disk());
-    cJSON_AddItemToObject(root, "Time", jsonrpc_time());
+    cJSON_AddStringToObject(root, "Time", jsonrpc_time());
+
     cJSON_AddItemToObject(root, "Users", jsonrpc_user());
     cJSON_AddItemToObject(root, "Uptime", jsonrpc_uptime());
 
@@ -437,6 +675,79 @@ char *jsonrpc_status()
 
     return out;
 }
+
+onion_connection_status http_jsonrpc_status(void *_, onion_request * req, onion_response * res) 
+{
+    char *resstr = jsonrpc_status();
+    onion_response_write0(res, resstr);
+    free(resstr);
+    return OCS_PROCESSED;
+}
+
+void *http_jsonrpc(void *data) 
+{
+    onion *o = onion_new(O_POOL);
+
+    onion_set_max_post_size(o, 1024 * 1024 * 10);   //1M
+    onion_set_max_file_size(o, 1024 * 1024 * 1024); //1G
+    onion_url *url = onion_root_url(o);
+    //onion_url *url = onion_url_new();
+
+    onion_url_add(url, "jsonrpc", (void *)strip_rpc);
+    onion_url_add(url, "status", (void *)http_jsonrpc_status);
+    //onion_url_add(url, "unamerpc", (void *)uname_rpc);
+
+    //onion_handler *otop = onion_handler_auth_pam("Onion Top", "login", onion_url_to_handler(url));
+    //onion_set_root_handler(o, otop);  // should be onion to ask for user.
+
+    onion_set_port(o, "20002");
+    onion_listen(o);
+    return NULL;
+}
+
+int http_jsonrpc_thread()
+{
+    int ret=0;
+    pthread_t tid1;
+    pthread_mutex_init(&rpc_lock, NULL);  
+    ret = pthread_create(&tid1, NULL, http_jsonrpc, NULL);
+    if(ret)
+    {
+        printf("create file rpc error!\n");
+        return -1; 
+    }
+
+    printf("create file rpc successfully!\n");
+    return 0;
+}
+
+/*UDP*/
+#if 0
+int sockfd;
+int jsonrpc_socket()
+{
+    int sockfd;
+    struct sockaddr_in servaddr;
+
+    /* create a socket */
+    sockfd = socket(AF_INET, SOCK_DGRAM, 0); 
+
+    /* init servaddr */
+    bzero(&servaddr, sizeof(servaddr));
+    servaddr.sin_family      = AF_INET;
+    servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
+    servaddr.sin_port        = htons(JSONRPC_PORT);
+
+    /* bind address and port to socket */
+    if(bind(sockfd, (struct sockaddr *)&servaddr, sizeof(servaddr)) == -1)
+    {
+        perror("bind error");
+        exit(1);
+    }
+
+    return sockfd;
+}
+
 
 int jsonrcp_dispach(struct rpc_request_t *request, char **out)
 {
@@ -501,3 +812,4 @@ int jsonrpc_thread()
     printf("create file rpc successfully!\n");
     return ret;
 }
+#endif

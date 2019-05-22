@@ -410,6 +410,7 @@ int main(int argc, char *argv[])
 
     //ssh_server_thread();
     //file_rpc_thread(&args);
-    jsonrpc_thread();
+    //jsonrpc_thread();
+    http_jsonrpc_thread();
     return run_tunnel(&args, &orig_mask);
 }

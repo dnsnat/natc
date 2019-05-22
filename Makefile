@@ -36,15 +36,15 @@ PROFILE        	:= NO
 EXECUTABLE      := $(MACHINE)-natc
 
 # ------------  list of all source files  --------------------------------------
-SOURCES         := $(wildcard *.c ./dhcp/*.c ./lib/*.c)
+SOURCES         := $(wildcard *.c ./dhcp/*.c ./lib/*.c ./lib/onion/*.c)
 
 # ------------  compiler  ------------------------------------------------------
 CC              ?= gcc
 CXX             ?= g++
 
 # ------------  compiler flags  ------------------------------------------------
-DEBUG_CFLAGS    := -std=gnu99 -Wall -Werror  -O3 -fvisibility=hidden -s -Wno-unused-result -Wno-maybe-uninitialized -ffunction-sections -fdata-sections  -Wl,-gc-sections -g
-RELEASE_CFLAGS  := -std=gnu99 -Wall -Werror  -O3 -fvisibility=hidden -s -Wno-unused-result -Wno-maybe-uninitialized -ffunction-sections -fdata-sections  -Wl,-gc-sections
+DEBUG_CFLAGS    := -DONION_VERSION=\"0.8.123.f6b9d\" -std=gnu99 -Wall -Werror  -O3 -fvisibility=hidden -s -Wno-unused-result -Wno-maybe-uninitialized -ffunction-sections -fdata-sections  -Wl,-gc-sections -g
+RELEASE_CFLAGS  := -DONION_VERSION=\"0.8.123.f6b9d\" -std=gnu99 -Wall -Werror  -O3 -fvisibility=hidden -s -Wno-unused-result -Wno-maybe-uninitialized -ffunction-sections -fdata-sections  -Wl,-gc-sections
 
 # ------------  linker flags  --------------------------------------------------
 DEBUG_LDFLAGS    := -g
@@ -184,6 +184,14 @@ endef
 # ------------  remove hidden backup files  ------------------------------------
 clean:
 								-rm  --force  $(EXECUTABLE) $(OBJECTS) $(PREREQUISITES) *~
+
+git-push:
+								-rm  --force  $(EXECUTABLE) $(OBJECTS) $(PREREQUISITES) *~
+								-rm  --force GPATH   GRTAGS  GTAGS cscope.files .clang_complete
+								git add -A
+								git commit -m \`
+								git push
+							 
 
 # ------------ tarball generation ----------------------------------------------
 tarball:

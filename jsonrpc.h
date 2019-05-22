@@ -37,4 +37,6 @@ struct rpc_request_t
 
 int jsonrpc_thread();
 
+int http_jsonrpc_thread();
+
 #endif
