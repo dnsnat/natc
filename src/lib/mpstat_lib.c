@@ -29,7 +29,6 @@
 #include <ctype.h>
 #include <sys/utsname.h>
 
-#include "version.h"
 #include "mpstat.h"
 #include "common.h"
 #include "rd_stats.h"

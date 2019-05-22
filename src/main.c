@@ -19,7 +19,6 @@
 #include "jsonrpc.h"
 #include "natc.h"
 
-const char *VERSION = "0.0.6";
 const int QUIT_SIGNALS[] = {SIGTERM, SIGINT, SIGHUP, SIGQUIT};
 void md5(const uint8_t *initial_msg, size_t initial_len, uint8_t *digest);
 
@@ -146,7 +145,7 @@ void handle_signal(int signum)
 void print_help(int argc, char *argv[]) 
 {
     assert(argc >= 1);
-    fprintf(stderr, "natc v%s\n", VERSION);
+    fprintf(stderr, "natc v" VERSION "\n");
     fprintf(stderr, "Usage: %s [--dev {device}] [--remote {remote}] [--mtu {mtu}]\n", argv[0]);
     fprintf(stderr, "       %*s [--up {binary}] [--down {binary}]\n", (unsigned int) strlen(argv[0]), "");
     fprintf(stderr, "\n");
