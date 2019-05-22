@@ -47,7 +47,7 @@
 #include "fsm.h"
 #include "natc.h"
 #include "iface.h"
-#include "./dhcp/dhclient.h"
+#include "dhclient.h"
 
 #define ETH_P_NAT 0xF0F0
 //int recv_min = 0;

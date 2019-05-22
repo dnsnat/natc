@@ -28,7 +28,7 @@
 #include "natc.h"
 #include "fsm.h"
 #include "iface.h"
-#include "./dhcp/dhclient.h"
+#include "dhclient.h"
 
 #define RECV_QUEUE 1024
 #define SEND_QUEUE 1024
