@@ -199,7 +199,7 @@ git-push:
 								-rm  --force GPATH   GRTAGS  GTAGS cscope.files .clang_complete
 								git add -A
 								read  comment
-								git commit -m \"$(comment)\"
+								git commit -m "$comment"
 								git push
 							 
 
