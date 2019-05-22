@@ -22,14 +22,6 @@
 
 	natc -u <username> -p <password> -d
 
-web开源网址:
-
-[https://github.com/dnsnat/dnsnat.github.io](https://github.com/dnsnat/dnsnat.github.io)
-
-web访问网址: demo
-
-[http://dnsnat.github.io/](http://dnsnat.github.io/)
-
-官方网址:
-
-[http://www.dnsnat.com](http://www.dnsnat.com)
+官方网址:[http://www.dnsnat.com](http://www.dnsnat.com)
+web开源网址:[https://github.com/dnsnat/dnsnat.github.io](https://github.com/dnsnat/dnsnat.github.io)
+web访问网址:[http://dnsnat.github.io/](http://dnsnat.github.io/)
