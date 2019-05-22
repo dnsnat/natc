@@ -17,13 +17,13 @@
 ## 编译方法
 
 ```bash
-    make
+make
 ```
 
 ## 使用方法
 
 ```bash
-	sudo ./x86_64-pc-linux-gnu-natc -u <username> -p <password> -d
+sudo ./x86_64-pc-linux-gnu-natc -u <username> -p <password> -d
 ```
 
 ## 链接
