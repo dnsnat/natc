@@ -194,11 +194,11 @@ endef
 clean:
 								-rm  --force  $(EXECUTABLE) $(OBJECTS) $(PREREQUISITES) *~
 
-git-push:
+push:
 								-rm  --force  $(EXECUTABLE) $(OBJECTS) $(PREREQUISITES) *~
 								-rm  --force GPATH   GRTAGS  GTAGS cscope.files .clang_complete
 								git add -A
-								read  comment
+								@read  comment; \
 								git commit -m "$comment"
 								git push
 							 
