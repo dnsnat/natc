@@ -39,9 +39,18 @@ EXECUTABLE      := $(MACHINE)-natc
 SOURCES         := $(wildcard ./src/*.c ./src/lib/dhcp/*.c ./src/lib/*.c ./src/lib/onion/*.c)
 
 # ------------  compiler  ------------------------------------------------------
+#export LC_ALL=C
+#export STAGING_DIR=/opt/toolchain/openwrt_sdk/openwrt-sdk-18.06.0-kirkwood_gcc-7.3.0_musl_eabi.Linux-x86_64/staging_dir/toolchain-arm_xscale_gcc-7.3.0_musl_eabi
+#export CC=arm-openwrt-linux-gcc
+#export AR=arm-openwrt-linux-ar
+
+#export CC=mipsel-openwrt-linux-gcc
+#export AR=mipsel-openwrt-linux-ar
+#export STAGING_DIR=/opt/toolchain/openwrt_sdk/openwrt-sdk-ramips-rt305x_gcc-7.3.0_musl.Linux-x86_64/staging_dir
+
 CC              ?= gcc
 CXX             ?= g++
-
+   
 # ------------  compiler flags  ------------------------------------------------
 DEBUG_CFLAGS    := -DONION_VERSION=\"0.8.123.f6b9d\" -std=gnu99 -Wall -Werror  -O3 -fvisibility=hidden -s -Wno-unused-result -Wno-maybe-uninitialized -ffunction-sections -fdata-sections  -Wl,-gc-sections -g
 RELEASE_CFLAGS  := -DONION_VERSION=\"0.8.123.f6b9d\" -std=gnu99 -Wall -Werror  -O3 -fvisibility=hidden -s -Wno-unused-result -Wno-maybe-uninitialized -ffunction-sections -fdata-sections  -Wl,-gc-sections
