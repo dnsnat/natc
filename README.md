@@ -12,7 +12,6 @@
 	3.集成了webserver
 	4.添加了angular-filemanager json-rpc
 	5.添加了dhcp自动分配ip
-	6.基于
 
 编译方法:
 
@@ -20,7 +19,7 @@
 
 使用方法: 
 
-	natc -u <username> -p <password> -d
+	sudo ./x86_64-pc-linux-gnu-natc -u <username> -p <password> -d
 
 官方网址    :[http://www.dnsnat.com](http://www.dnsnat.com)
 
