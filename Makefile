@@ -36,7 +36,7 @@ PROFILE        	:= NO
 EXECUTABLE      := $(MACHINE)-natc
 
 # ------------  list of all source files  --------------------------------------
-SOURCES         := $(wildcard ./src/*.c ./dhcp/*.c ./lib/*.c ./lib/onion/*.c)
+SOURCES         := $(wildcard ./src/*.c ./src/lib/dhcp/*.c ./src/lib/*.c ./src/lib/onion/*.c)
 
 # ------------  compiler  ------------------------------------------------------
 CC              ?= gcc
@@ -67,7 +67,7 @@ ifeq (YES, ${PROFILE})
 endif
 
 # ------------  additional system include directories  -------------------------
-GLOBAL_INC_DIR  = ./lib ./dhcp
+GLOBAL_INC_DIR  = ./src/lib ./src/lib/dhcp
 
 # ------------  private include directories  -----------------------------------
 LOCAL_INC_DIR   = $(HOME)/include
