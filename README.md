@@ -7,7 +7,7 @@
 
 功能:
 
-	1.添加了认证功能
+    1.添加了认证功能
 	2.添加了多用户功能
 	3.集成了webserver
 	4.添加了angular-filemanager json-rpc
@@ -22,6 +22,8 @@
 
 	natc -u <username> -p <password> -d
 
-官方网址:[http://www.dnsnat.com](http://www.dnsnat.com)
-web开源网址:[https://github.com/dnsnat/dnsnat.github.io](https://github.com/dnsnat/dnsnat.github.io)
-web访问网址:[http://dnsnat.github.io/](http://dnsnat.github.io/)
+官方网址    :[http://www.dnsnat.com](http://www.dnsnat.com)
+
+web开源网址 :[https://github.com/dnsnat/dnsnat.github.io](https://github.com/dnsnat/dnsnat.github.io)
+
+web访问网址 :[http://dnsnat.github.io/](http://dnsnat.github.io/)
