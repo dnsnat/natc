@@ -190,7 +190,7 @@ git-push:
 								-rm  --force GPATH   GRTAGS  GTAGS cscope.files .clang_complete
 								git add -A
 								top
-								git commit -m \`
+								git commit -m \"
 								git push
 							 
 
