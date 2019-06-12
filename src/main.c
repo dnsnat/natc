@@ -319,10 +319,12 @@ void cli_parse(struct args *args, int argc, char *argv[])
         memcpy(&addr_in.sin_addr.s_addr,h->h_addr,4);
         in.s_addr=addr_in.sin_addr.s_addr;
         args->remote = inet_ntoa(in);
+#if 0
         printf("host name:%s\n",h->h_name);
         printf("ip lenght:%d\n",h->h_length);//IPv4 or IPv6
         printf("type:%d\n",h->h_addrtype);
         printf("ip:%s\n",inet_ntoa(in));//将一个IP转换成一个互联网标准点分格式的字符串
+#endif
     }
 
     if (argv[optind]) {

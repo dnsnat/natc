@@ -36,7 +36,7 @@ PROFILE        	:= NO
 EXECUTABLE      := $(MACHINE)-natc
 
 # ------------  list of all source files  --------------------------------------
-SOURCES         := $(wildcard ./src/*.c ./src/lib/dhcp/*.c ./src/lib/*.c ./src/lib/onion/*.c)
+SOURCES         := $(wildcard ./src/*.c ./src/ext/dhcp/*.c ./src/ext/sysstat/*.c ./src/ext/onion/*.c)
 
 # ------------  compiler  ------------------------------------------------------
 #export LC_ALL=C
@@ -52,12 +52,12 @@ CC              ?= gcc
 CXX             ?= g++
    
 # ------------  compiler flags  ------------------------------------------------
-DEBUG_CFLAGS    := -DVERSION=\"0.0.7\" -DONION_VERSION=\"0.8.123.f6b9d\" -std=gnu99 -Wall -Werror  -O3 -fvisibility=hidden -s -Wno-unused-result -Wno-maybe-uninitialized -ffunction-sections -fdata-sections  -Wl,-gc-sections -g
-RELEASE_CFLAGS  := -DVERSION=\"0.0.7\" -DONION_VERSION=\"0.8.123.f6b9d\" -std=gnu99 -Wall -Werror  -O3 -fvisibility=hidden -s -Wno-unused-result -Wno-maybe-uninitialized -ffunction-sections -fdata-sections  -Wl,-gc-sections
+DEBUG_CFLAGS    := -DVERSION=\"0.0.7\" -DONION_VERSION=\"0.8.123.f6b9d\" -std=gnu99 -Wall -Werror  -O3 -fvisibility=hidden -s -Wno-unused-result -Wno-maybe-uninitialized  -g
+RELEASE_CFLAGS  := -DVERSION=\"0.0.7\" -DONION_VERSION=\"0.8.123.f6b9d\" -std=gnu99 -Wall -Werror  -O3 -fvisibility=hidden -s -Wno-unused-result -Wno-maybe-uninitialized 
 
 # ------------  linker flags  --------------------------------------------------
-DEBUG_LDFLAGS    := -g
-RELEASE_LDFLAGS  :=  
+DEBUG_LDFLAGS    := -ffunction-sections -fdata-sections  -Wl,-gc-sections -g
+RELEASE_LDFLAGS  := -ffunction-sections -fdata-sections  -Wl,-gc-sections 
 
 ifeq (YES, ${DEBUG})
   CFLAGS       := ${DEBUG_CFLAGS}
@@ -76,7 +76,7 @@ ifeq (YES, ${PROFILE})
 endif
 
 # ------------  additional system include directories  -------------------------
-GLOBAL_INC_DIR  = ./src/lib ./src/lib/dhcp
+GLOBAL_INC_DIR  = ./src/ext ./src/ext/sysstat ./src/ext/dhcp  
 
 # ------------  private include directories  -----------------------------------
 LOCAL_INC_DIR   = $(HOME)/include

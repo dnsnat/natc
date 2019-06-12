@@ -60,7 +60,6 @@ struct ifreq ethreq;     //网络接口地址
 
 int tap_cmd_send(char *buf, int len)
 {
-    printf("send cmd\n");
     if(len < 14)
     {
         printf("cmd len error\n");
@@ -84,15 +83,17 @@ int tap_cmd_send(char *buf, int len)
         return -1;
     }
 
+    printf("send cmd\n");
     return 0;
 }
 
 int tap_cmd_recv(char *buf, int len)
 {
-    printf("recv cmd\n");
     int n = recv(sock_raw_fd, buf, len, 0);
     if(n <= 0 && n != -1)
         printf("recv cmd error n = %ld\n", (long)n);
+    else
+        printf("recv cmd\n");
     /*此处应该添加crc校验*/
     return n;
 }

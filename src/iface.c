@@ -64,7 +64,7 @@ void get_if_mac(char *device)
 
     if(err != -1)
     { 
-        printf("获取mac地址开始打印！\n");
+        printf("获取mac地址:\n");
         memcpy(macaddr,req.ifr_hwaddr.sa_data,ETH_ALEN); //取输出的MAC地址
         for(i=0;i<ETH_ALEN;i++)
             printf("0x%02x ",macaddr[i]);
@@ -88,7 +88,7 @@ void set_if_mac(char *device)
 
     if(err != -1)
     { 
-        printf("设置mac地址开始打印！\n");
+        printf("设置mac地址:\n");
         memcpy(macaddr,req.ifr_hwaddr.sa_data,ETH_ALEN); //取输出的MAC地址
         for(i=0;i<ETH_ALEN;i++)
             printf("0x%02x ",macaddr[i]);
@@ -166,6 +166,7 @@ int create_tap(char *name, char return_name[IFNAMSIZ], unsigned int mtu)
     struct ifreq req;
     memset(&req, 0, sizeof req);
     req.ifr_flags = IFF_TAP | IFF_NO_PI;
+    strncpy(req.ifr_name, "natc", IFNAMSIZ);
 
     if (name) 
     {

@@ -54,6 +54,7 @@ int setup_socket(char *remote_ip, in_addr_t bind_addr, uint16_t bind_port)
     local.sin_port = htons(bind_port);
     local.sin_addr.s_addr = bind_addr;
 
+    /*绑定本地端口*/
     int bind_result = bind(sockfd, (struct sockaddr *) &local, sizeof local);
     if (bind_result < 0) 
     {
