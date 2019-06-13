@@ -375,7 +375,10 @@ int main(int argc, char *argv[])
 
     cli_parse(&args, argc, argv);
     if(strlen(args.httpd_port))
+    {
         httpd_thread(&args);
+        sleep(1);
+    }
 
     sigset_t mask;
     sigset_t orig_mask;
