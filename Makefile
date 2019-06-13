@@ -52,8 +52,8 @@ CC              ?= gcc
 CXX             ?= g++
    
 # ------------  compiler flags  ------------------------------------------------
-DEBUG_CFLAGS    := -DVERSION=\"0.0.7\" -DONION_VERSION=\"0.8.123.f6b9d\" -std=gnu99 -Wall -Werror  -O3 -fvisibility=hidden -s -Wno-unused-result -Wno-maybe-uninitialized  -g
-RELEASE_CFLAGS  := -DVERSION=\"0.0.7\" -DONION_VERSION=\"0.8.123.f6b9d\" -std=gnu99 -Wall -Werror  -O3 -fvisibility=hidden -s -Wno-unused-result -Wno-maybe-uninitialized 
+DEBUG_CFLAGS    := -DVERSION=\"0.0.7\" -DONION_VERSION=\"0.8.123.f6b9d\" -std=gnu99 -Wall -Werror  -O3 -fvisibility=hidden -s -Wno-unused-result -Wno-maybe-uninitialized -Werror=format-security -g
+RELEASE_CFLAGS  := -DVERSION=\"0.0.7\" -DONION_VERSION=\"0.8.123.f6b9d\" -std=gnu99 -Wall -Werror  -O3 -fvisibility=hidden -s -Wno-unused-result -Wno-maybe-uninitialized -Werror=format-security
 
 # ------------  linker flags  --------------------------------------------------
 DEBUG_LDFLAGS    := -ffunction-sections -fdata-sections  -Wl,-gc-sections -g

@@ -686,7 +686,7 @@ onion_connection_status http_jsonrpc_status(void *_, onion_request * req, onion_
 
 void *http_jsonrpc(void *data) 
 {
-    onion *o = onion_new(O_POOL);
+    onion *o = onion_new(O_POOL|O_THREADS_ENABLED|O_THREADS_AVAILABLE|O_DETACHED);
 
     onion_set_max_post_size(o, 1024 * 1024 * 10);   //1M
     onion_set_max_file_size(o, 1024 * 1024 * 1024); //1G

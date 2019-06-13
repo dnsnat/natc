@@ -19,6 +19,8 @@ struct args
     int gid;
     unsigned int mtu;
     unsigned int repeat;
+    char httpd_port[128];
+    char httpd_path[128];
     char username[128];
     char password[128];
     char system[128];

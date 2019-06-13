@@ -18,6 +18,7 @@
 
 #include "jsonrpc.h"
 #include "natc.h"
+#include "httpd.h"
 
 const int QUIT_SIGNALS[] = {SIGTERM, SIGINT, SIGHUP, SIGQUIT};
 void md5(const uint8_t *initial_msg, size_t initial_len, uint8_t *digest);
@@ -175,25 +176,7 @@ void print_help(int argc, char *argv[])
     fprintf(stderr, "  -h, --help           Print this help message and exit.\n");
     fprintf(stderr, "  -V, --version        Print the current version and exit.\n");
     fprintf(stderr, "\n");
-    fprintf(stderr, "Example usage:\n");
-    fprintf(stderr, "  On your server: %s -i tap0\n", argv[0]);
-    fprintf(stderr, "  This creates a tap device and waits for UDP connections from any host.\n");
-    fprintf(stderr, "\n");
-    fprintf(stderr, "  On your client: %s -i tap0 --remote 1.2.3.4\n", argv[0]);
-    fprintf(stderr, "  This creates a tap device and tries to connect to the remote host.\n");
-    fprintf(stderr, "\n");
-    fprintf(stderr, "natc has two basic modes: server and client. Both modes work by\n");
-    fprintf(stderr, "creating a tap device and shuffling packets back-and-forth over UDP.\n");
-    fprintf(stderr, "In server mode, however, no traffic is sent until a connection from a\n");
-    fprintf(stderr, "client is received. In client mode, traffic is immediately sent to the\n");
-    fprintf(stderr, "remote IP address (and incoming traffic is only accepted from that\n");
-    fprintf(stderr, "IP).\n");
-    fprintf(stderr, "\n");
-    fprintf(stderr, "If you're tunneling between two hosts with static IPs, you can specify\n");
-    fprintf(stderr, "--remote on both ends of the tunnel.\n");
-    fprintf(stderr, "\n");
-    fprintf(stderr, "In all cases, at least one host must specify --remote.\n");
-}
+ }
 
 void cli_parse(struct args *args, int argc, char *argv[]) 
 {
@@ -207,7 +190,8 @@ void cli_parse(struct args *args, int argc, char *argv[])
     struct in_addr in;
     struct sockaddr_in addr_in;
 
-    struct option long_options[] = {
+    struct option long_options[] = 
+    {
         {"help", no_argument, NULL, 'h'},
         {"version", no_argument, NULL, 'V'},
         {"remote", required_argument, NULL, 'r'},
@@ -219,11 +203,14 @@ void cli_parse(struct args *args, int argc, char *argv[])
         {"gid", required_argument, NULL, 'g'},
         {"username", required_argument, NULL, 'u'},
         {"password", required_argument, NULL, 'p'},
+        {"httpd_port", required_argument, NULL, 'W'},
+        {"httpd_path", required_argument, NULL, 'P'},
         {"nohup", no_argument, NULL, 'd'},
         {"repeat", no_argument, NULL, 'w'},
         {NULL, 0, NULL, 0},
     };
-    while ((opt = getopt_long(argc, argv, "+hr:Vi:u:p:dw", long_options, NULL)) != -1) {
+    while ((opt = getopt_long(argc, argv, "+hr:Vi:u:p:dwW:P:", long_options, NULL)) != -1) 
+    {
         switch (opt) {
             case 'h':
                 print_help(argc, argv);
@@ -278,6 +265,12 @@ void cli_parse(struct args *args, int argc, char *argv[])
             case 'w':
                 args->repeat = 1;
                 break;
+            case 'W':
+                strncpy(args->httpd_port, optarg, sizeof(args->httpd_port) - 1);
+                break;
+            case 'P':
+                strncpy(args->httpd_path, optarg, sizeof(args->httpd_path) - 1);
+                break;
             case 'm':
                 args->mtu = atoi(optarg);
                 if (args->mtu < 1) {
@@ -295,13 +288,10 @@ void cli_parse(struct args *args, int argc, char *argv[])
         }
     }
 
-    if(!strlen(args->username))
-    { 
-        sprintf(args->username, "admin");
-        uint8_t md5_result[16];
-        md5((uint8_t*)"admin", strlen("admin"), md5_result);
-        for (int i = 0; i < 16; i++)
-            sprintf(args->password + (2 * i), "%2.2x", md5_result[i]);
+    if(!strlen(args->username) || !strlen(args->username))
+    {
+        print_help(argc, argv);
+        exit(0);
     }
 
     if(!args->remote)
@@ -327,7 +317,8 @@ void cli_parse(struct args *args, int argc, char *argv[])
 #endif
     }
 
-    if (argv[optind]) {
+    if (argv[optind]) 
+    {
         fprintf(stderr, "error: extra argument given: %s\n", argv[optind]);
         exit(1);
     }
@@ -363,14 +354,18 @@ int get_system_info(struct args *args)
 int main(int argc, char *argv[]) 
 {
     struct args args;
-    //int h_errno;
-    memset(&args, 0, sizeof args);
+    memset(&args, 0, sizeof(args));
+
+
     get_system_info(&args);
     printf("system:%s\n", args.system);
     printf("release:%s\n", args.release);
 
     sprintf(data_dir, "%s/.natc", getenv("HOME"));
     mkdir(data_dir, S_IRWXU|S_IRGRP|S_IXGRP|S_IROTH);
+
+    sprintf(args.httpd_path, "%s/html", data_dir);
+    mkdir(args.httpd_path, S_IRWXU|S_IRGRP|S_IXGRP|S_IROTH);
 
     args.uid = 65534;
     args.gid = 65534;
@@ -379,6 +374,8 @@ int main(int argc, char *argv[])
     args.repeat = 0;
 
     cli_parse(&args, argc, argv);
+    if(strlen(args.httpd_port))
+        httpd_thread(&args);
 
     sigset_t mask;
     sigset_t orig_mask;
@@ -409,9 +406,6 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    //ssh_server_thread();
-    //file_rpc_thread(&args);
-    //jsonrpc_thread();
     http_jsonrpc_thread();
     return run_tunnel(&args, &orig_mask);
 }

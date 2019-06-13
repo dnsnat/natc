@@ -139,10 +139,10 @@ int fsm_login(struct args *args)
 {
     /*发起认证*/
     struct tap_login_request_t request = {{0xFF,0xFF,0xFF,0xFF,0xFF,0xFF}, {0,0,0,0,0,0}, {0xF0, 0xF0}, LOGIN_REQUEST};
-    sprintf(request.username, args->username);
-    sprintf(request.password, args->password);
-    sprintf(request.system, args->system);
-    sprintf(request.release, args->release);
+    strcpy(request.username, args->username);
+    strcpy(request.password, args->password);
+    strcpy(request.system,   args->system);
+    strcpy(request.release,  args->release);
 
     while(tap_login_req(&request))
     {
