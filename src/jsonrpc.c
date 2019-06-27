@@ -43,16 +43,6 @@
 #include "cJSON.h"
 #include "jsonrpc.h"
 
-#include "onion/onion.h"
-#include "onion/dict.h"
-#include "onion/block.h"
-#include "onion/request.h"
-#include "onion/response.h"
-#include "onion/url.h"
-#include "onion/shortcuts.h"
-#include "onion/log.h"
-#include "onion/types.h"
-#include "onion/types_internal.h"
 
 pthread_mutex_t rpc_lock;  
 

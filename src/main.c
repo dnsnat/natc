@@ -265,10 +265,10 @@ void cli_parse(struct args *args, int argc, char *argv[])
             case 'w':
                 args->repeat = 1;
                 break;
-            case 'W':
+            case 'P':
                 strncpy(args->httpd_port, optarg, sizeof(args->httpd_port) - 1);
                 break;
-            case 'P':
+            case 'W':
                 strncpy(args->httpd_path, optarg, sizeof(args->httpd_path) - 1);
                 break;
             case 'm':
@@ -374,11 +374,6 @@ int main(int argc, char *argv[])
     args.repeat = 0;
 
     cli_parse(&args, argc, argv);
-    if(strlen(args.httpd_port))
-    {
-        httpd_thread(&args);
-        sleep(1);
-    }
 
     sigset_t mask;
     sigset_t orig_mask;
@@ -409,6 +404,7 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    http_jsonrpc_thread();
+    httpd_thread(&args);
+    //http_jsonrpc_thread();
     return run_tunnel(&args, &orig_mask);
 }

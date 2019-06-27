@@ -30,6 +30,7 @@
 #include <locale.h>
 #include <libintl.h>
 #include "httpd.h"
+#include "jsonrpc.h"
 
 int fileserver_page(const char *basepath, onion_request *req, onion_response * res)
 {
@@ -71,14 +72,22 @@ void *httpd(void *arg)
     onion *o = NULL;
     char *hostname = "::";
     char *basepath = args->httpd_path;
-    char *port     = args->httpd_port;
-
-    onion_handler *root = onion_handler_new((onion_handler_handler)fileserver_page, (void *)basepath, NULL);
+    //char *port     = args->httpd_port;
 
     o = onion_new(O_POOL|O_THREADS_ENABLED|O_THREADS_AVAILABLE|O_DETACHED);
-    onion_set_root_handler(o, root);
-    onion_set_port(o, port);
+    onion_set_max_post_size(o, 1024 * 1024 * 10);   //1M
+    onion_set_max_file_size(o, 1024 * 1024 * 1024); //1G
+    //onion_set_port(o, port);
+    onion_set_port(o, "20002");
     onion_set_hostname(o, hostname);
+
+    //onion_handler *root = onion_handler_new((onion_handler_handler)fileserver_page, (void *)basepath, NULL);
+    //onion_set_root_handler(o, root);
+
+    onion_url *url = onion_root_url(o);
+    onion_url_add(url, "jsonrpc", (void *)strip_rpc);
+    onion_url_add(url, "status", (void *)http_jsonrpc_status);
+    onion_url_add_handler(url, "^", onion_handler_new((onion_handler_handler)fileserver_page, (void *)basepath, NULL));
 
     int error = onion_listen(o);
     if (error) {
