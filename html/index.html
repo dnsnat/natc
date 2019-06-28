@@ -1,0 +1,147 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<meta charset="utf-8">
+<title>农业大棚-云端测试</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<!-- jQuery -->
+<script src="js/jquery.min.js"></script>
+
+<!-- Firebase -->
+<script src="js/firebase.js"></script>
+
+<!-- canvasjs -->
+<script src="js/jquery.canvasjs.min.js"></script>
+
+<!-- Material Design fonts 
+<link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Roboto:300,400,500,700" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+-->
+
+<!-- Bootstrap -->
+<link rel="stylesheet" href="css/bootstrap.min.css">
+<link rel="stylesheet" href="css/bootstrap-material-design.min.css">
+<link rel="stylesheet" href="css/ripples.min.css">
+<script src="js/bootstrap.min.js"></script>
+<script src="js/material.min.js"></script>
+<script src="js/ripples.min.js"></script>
+
+<!-- Animate.css -->
+<link rel="stylesheet" href="css/animate.min.css">
+
+<script>
+var chart, toOffline;
+var newItems = false;
+// Initialize Firebase
+var status_rpc = 'http://' + '1234' + '.' +  document.domain.split(".")[1] + '.witkit.cn:20006/rpcjson?slaveid=3'; 
+
+function jsonrpc(){
+
+    $(document).ajaxSend(function (event, xhr, settings) {
+        settings.xhrFields = {
+            withCredentials: false
+        };
+    });
+
+    $.getJSON(status_rpc, function (json) {
+        $("#temperature > .content").html(json.temp + " &deg;C");
+        $("#humidity > .content").html(json.humidity + " %");
+        $("#status > .content").html(json.light + " %");
+    });
+    setTimeout(jsonrpc,3000);
+}
+
+
+jsonrpc();
+</script>
+
+<style>
+.dialog {
+	width: 100%;
+	border-radius: 4px;
+	margin-bottom: 20px;
+	box-shadow: 0 1px 6px 0 rgba(0, 0, 0, 0.12), 0 1px 6px 0 rgba(0, 0, 0, 0.12);
+}
+.dialog > .content {
+	padding: 30px 0;
+	border-radius: 6px 6px 0 0;
+	font-size: 64px;
+	color: rgba(255,255,255, 0.84);
+	text-align: center;
+}
+.dialog.primary > .content{
+	background: #00aa9a;
+}
+.dialog.success > .content {
+	background: #59b75c;
+}
+.dialog.info > .content {
+	background: #03a9f4;
+}
+.dialog.warning > .content {
+	background: #ff5722;
+}
+
+.dialog.danger > .content {
+	background: #f44336;
+}
+.dialog > .title {
+	background: #FFF;
+	border-radius: 0 0 6px 6px;
+	font-size: 22px;
+	color: rgba(0,0,0, 0.87);
+	text-align: center;
+	padding: 10px 0;
+	/* box-shadow: 0px 10px 8px -10px rgba(0, 0, 0, 0.4) inset; */
+	font-weight: bold;
+}
+.nav-tabs {
+	margin-bottom: 20px;
+}
+</style>
+</head>
+
+<body>
+  <div class="container">
+    <h1>物联网监控<small> - ARM920T</small></h1>
+
+    <hr />
+     
+    <!-- Nav tabs -->
+    <ul class="nav nav-tabs" role="tablist">
+      <li role="presentation" class="active"><a href="#overview" aria-controls="home" role="tab" data-toggle="tab">概览</a></li>
+      <li role="presentation"><a href="#history" aria-controls="profile" role="tab" data-toggle="tab">历史</a></li>
+    </ul>
+
+    <!-- Tab panes -->
+    <div class="tab-content">
+      <div role="tabpanel" class="tab-pane active" id="overview">
+        <div class="row">
+           <div class="col-sm-4">
+             <div class="dialog primary fadeIn animated" id="temperature">
+               <div class="content">32.0 &deg;C</div>
+               <div class="title">温度</div>
+             </div>
+           </div>
+           <div class="col-sm-4">
+             <div class="dialog info fadeIn animated" id="humidity">
+               <div class="content">20.0 %</div>
+               <div class="title">湿度</div>
+             </div>
+           </div>
+           <div class="col-sm-4">
+             <div class="dialog success fadeIn animated" id="status">
+               <div class="content">80.0 %</div>
+               <div class="title">光照</div>
+             </div>
+           </div>
+        </div>
+      </div>
+      <div role="tabpanel" class="tab-pane" id="history">
+        <div id="chartContainer" style="height: 300px; width: 100%;"></div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

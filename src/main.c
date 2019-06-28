@@ -364,7 +364,7 @@ int main(int argc, char *argv[])
     sprintf(data_dir, "%s/.natc", getenv("HOME"));
     mkdir(data_dir, S_IRWXU|S_IRGRP|S_IXGRP|S_IROTH);
 
-    sprintf(args.httpd_path, "%s/html", data_dir);
+    sprintf(args.httpd_path, "./html");
     mkdir(args.httpd_path, S_IRWXU|S_IRGRP|S_IXGRP|S_IROTH);
 
     args.uid = 65534;
